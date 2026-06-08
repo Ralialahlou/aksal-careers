@@ -1,28 +1,7 @@
 import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CheckCircle, Upload, X, ChevronDown } from 'lucide-react';
-import { STORES, MALLS } from '../data/jobs';
-
-const LANGUAGES = [
-  { id: 'arabe', label: 'Arabe' },
-  { id: 'francais', label: 'Français' },
-  { id: 'anglais', label: 'Anglais' },
-  { id: 'espagnol', label: 'Espagnol' },
-  { id: 'autre', label: 'Autre' },
-];
-
-const CITIES = [
-  'Casablanca', 'Marrakech', 'Rabat', 'Fès', 'Tanger', 'Agadir',
-  'Meknès', 'Oujda', 'Kénitra', 'Tétouan', 'Autre',
-];
-
-const EXPERIENCES = [
-  { id: 'aucune', label: 'Aucune expérience' },
-  { id: 'moins1', label: 'Moins d\'1 an' },
-  { id: '1-2', label: '1 à 2 ans' },
-  { id: '3-5', label: '3 à 5 ans' },
-  { id: 'plus5', label: 'Plus de 5 ans' },
-];
+import { useAppData } from '../hooks/useData';
 
 const initialForm = {
   nom: '', prenom: '', email: '', telephone: '',
@@ -32,14 +11,15 @@ const initialForm = {
 };
 
 export default function ApplyPage() {
+  const { config, content, loading, error } = useAppData();
   const [params] = useSearchParams();
   const [form, setForm] = useState({
     ...initialForm,
-    poste: params.get('poste') || '',
+    poste:   params.get('poste')   || '',
     enseigne: params.get('enseigne') || '',
-    mall: params.get('mall') || '',
+    mall:    params.get('mall')    || '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors]     = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef(null);
@@ -50,11 +30,9 @@ export default function ApplyPage() {
   }
 
   function toggleLangue(id) {
-    set('langues',
-      form.langues.includes(id)
-        ? form.langues.filter((l) => l !== id)
-        : [...form.langues, id]
-    );
+    set('langues', form.langues.includes(id)
+      ? form.langues.filter((l) => l !== id)
+      : [...form.langues, id]);
   }
 
   function handleFile(e) {
@@ -63,12 +41,10 @@ export default function ApplyPage() {
     const allowed = ['application/pdf', 'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowed.includes(file.type)) {
-      setErrors((e) => ({ ...e, cv: 'Format non accepté. Utilisez PDF ou Word.' }));
-      return;
+      setErrors((e) => ({ ...e, cv: 'Format non accepté. Utilisez PDF ou Word.' })); return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setErrors((e) => ({ ...e, cv: 'Fichier trop volumineux (max 5 Mo).' }));
-      return;
+      setErrors((e) => ({ ...e, cv: 'Fichier trop volumineux (max 5 Mo).' })); return;
     }
     set('cv', file);
   }
@@ -99,40 +75,43 @@ export default function ApplyPage() {
     setTimeout(() => { setSubmitting(false); setSubmitted(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 1500);
   }
 
-  /* ── Success screen ───────────────────────────── */
+  if (loading) return <div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#C9A96E] border-t-transparent rounded-full animate-spin" /></div>;
+  if (error)   return <div className="flex-1 flex items-center justify-center text-sm text-[#6B6560]">{error}</div>;
+
+  const c  = content.apply;
+  const fl = c.fields;
+  const pl = c.placeholders;
+  const s  = c.sections;
+
+  const stores     = config.stores.filter((st) => st.id !== 'all');
+  const malls      = config.malls.filter((m) => m.id !== 'all');
+  const languages  = config.languages;
+  const experiences = config.experiences;
+  const formCities = config.formCities;
+
+  /* ── Success ─────────────────────────────────────── */
   if (submitted) {
+    const headline = c.success.headline.replace('{prenom}', form.prenom).replace('{nom}', form.nom);
+    const message  = c.success.message.replace('{email}', form.email);
     return (
       <main className="flex-1 flex items-center justify-center px-5 py-20">
         <div className="max-w-md w-full text-center">
           <div className="w-14 h-14 border border-[#C9A96E] flex items-center justify-center mx-auto mb-8">
             <CheckCircle size={26} className="text-[#C9A96E]" />
           </div>
-          <p className="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-[#C9A96E] mb-4">
-            Candidature reçue
-          </p>
-          <h1
-            className="text-3xl md:text-4xl font-light italic text-[#1C1C1C] mb-5"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-          >
-            Merci {form.prenom} {form.nom} !
+          <p className="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-[#C9A96E] mb-4">{c.success.eyebrow}</p>
+          <h1 className="text-3xl md:text-4xl font-light italic text-[#1C1C1C] mb-5" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+            {headline}
           </h1>
           <div className="w-10 h-px bg-[#C9A96E] mx-auto mb-6" />
-          <p className="text-sm text-[#6B6560] leading-relaxed font-light mb-10">
-            Votre candidature a bien été reçue. Notre équipe RH l'examinera dans les meilleurs délais
-            et vous contactera à l'adresse <span className="text-[#1C1C1C]">{form.email}</span>.
-          </p>
+          <p className="text-sm text-[#6B6560] leading-relaxed font-light mb-10">{message}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href="/"
-              className="px-7 py-3 bg-[#C9A96E] text-white text-xs uppercase tracking-[0.12em] font-medium hover:bg-[#A8813F] transition-colors"
-            >
-              Voir d'autres offres
+            <a href="/" className="px-7 py-3 bg-[#C9A96E] text-white text-xs uppercase tracking-[0.12em] font-medium hover:bg-[#A8813F] transition-colors">
+              {c.success.ctaOffers}
             </a>
-            <button
-              onClick={() => { setSubmitted(false); setForm(initialForm); }}
-              className="px-7 py-3 border border-[#E5DDD0] text-[#6B6560] text-xs uppercase tracking-[0.12em] font-medium hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors"
-            >
-              Nouvelle candidature
+            <button onClick={() => { setSubmitted(false); setForm(initialForm); }}
+              className="px-7 py-3 border border-[#E5DDD0] text-[#6B6560] text-xs uppercase tracking-[0.12em] font-medium hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors">
+              {c.success.ctaNew}
             </button>
           </div>
         </div>
@@ -140,192 +119,133 @@ export default function ApplyPage() {
     );
   }
 
-  /* ── Form ─────────────────────────────────────── */
+  /* ── Form ─────────────────────────────────────────── */
+  const headline = form.poste
+    ? c.headlineWithJob.replace('{poste}', form.poste)
+    : c.headlineDefault;
+
   return (
     <main className="flex-1">
-      {/* Hero */}
       <section className="bg-white border-b border-[#E5DDD0] py-14 md:py-20 px-5">
         <div className="max-w-2xl mx-auto">
-          <p className="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-[#C9A96E] mb-5">
-            Candidature · Groupe AKSAL
-          </p>
-          <h1
-            className="text-4xl md:text-5xl font-light italic text-[#1C1C1C] leading-[1.1] mb-4"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-          >
-            {form.poste
-              ? `Postuler — ${form.poste}`
-              : 'Déposez votre\ncandidature.'}
+          <p className="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-[#C9A96E] mb-5">{c.eyebrow}</p>
+          <h1 className="text-4xl md:text-5xl font-light italic text-[#1C1C1C] leading-[1.1] mb-4 whitespace-pre-line" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+            {headline}
           </h1>
           {(form.enseigne || form.mall) && (
-            <p className="text-sm text-[#6B6560] font-light">
-              {form.enseigne}{form.mall ? ` · ${form.mall}` : ''}
-            </p>
+            <p className="text-sm text-[#6B6560] font-light">{form.enseigne}{form.mall ? ` · ${form.mall}` : ''}</p>
           )}
           <div className="w-12 h-px bg-[#C9A96E] mt-5" />
         </div>
       </section>
 
-      {/* Form body */}
       <section className="max-w-2xl mx-auto px-5 py-10 md:py-14">
         <form onSubmit={handleSubmit} noValidate className="space-y-8">
 
-          <FormSection step="01" title="Informations personnelles">
+          <FormSection step="01" title={s.identity}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <Field label="Nom *" error={errors.nom}>
-                <Input
-                  type="text" value={form.nom} onChange={(e) => set('nom', e.target.value)}
-                  placeholder="El Alaoui" hasError={!!errors.nom}
-                />
+              <Field label={fl.nom} error={errors.nom}>
+                <Input type="text" value={form.nom} onChange={(e) => set('nom', e.target.value)} placeholder={pl.nom} hasError={!!errors.nom} />
               </Field>
-              <Field label="Prénom *" error={errors.prenom}>
-                <Input
-                  type="text" value={form.prenom} onChange={(e) => set('prenom', e.target.value)}
-                  placeholder="Karim" hasError={!!errors.prenom}
-                />
+              <Field label={fl.prenom} error={errors.prenom}>
+                <Input type="text" value={form.prenom} onChange={(e) => set('prenom', e.target.value)} placeholder={pl.prenom} hasError={!!errors.prenom} />
               </Field>
             </div>
-            <Field label="Date de naissance *" error={errors.dateNaissance}>
-              <Input
-                type="date" value={form.dateNaissance}
-                onChange={(e) => set('dateNaissance', e.target.value)}
+            <Field label={fl.dateNaissance} error={errors.dateNaissance}>
+              <Input type="date" value={form.dateNaissance} onChange={(e) => set('dateNaissance', e.target.value)}
                 max={new Date(new Date().setFullYear(new Date().getFullYear() - 16)).toISOString().split('T')[0]}
-                hasError={!!errors.dateNaissance}
-              />
+                hasError={!!errors.dateNaissance} />
             </Field>
           </FormSection>
 
-          <FormSection step="02" title="Coordonnées">
-            <Field label="Adresse e-mail *" error={errors.email}>
-              <Input
-                type="email" value={form.email} onChange={(e) => set('email', e.target.value)}
-                placeholder="karim@exemple.com" autoComplete="email" hasError={!!errors.email}
-              />
+          <FormSection step="02" title={s.contact}>
+            <Field label={fl.email} error={errors.email}>
+              <Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} placeholder={pl.email} autoComplete="email" hasError={!!errors.email} />
             </Field>
-            <Field label="Téléphone *" error={errors.telephone}>
-              <Input
-                type="tel" value={form.telephone} onChange={(e) => set('telephone', e.target.value)}
-                placeholder="+212 6 00 00 00 00" autoComplete="tel" hasError={!!errors.telephone}
-              />
+            <Field label={fl.telephone} error={errors.telephone}>
+              <Input type="tel" value={form.telephone} onChange={(e) => set('telephone', e.target.value)} placeholder={pl.telephone} autoComplete="tel" hasError={!!errors.telephone} />
             </Field>
-            <Field label="Ville de résidence *" error={errors.ville}>
+            <Field label={fl.ville} error={errors.ville}>
               <SelectField value={form.ville} onChange={(e) => set('ville', e.target.value)} hasError={!!errors.ville}>
-                <option value="">Sélectionnez votre ville</option>
-                {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                <option value="">{pl.ville}</option>
+                {formCities.map((city) => <option key={city} value={city}>{city}</option>)}
               </SelectField>
             </Field>
           </FormSection>
 
-          <FormSection step="03" title="Langues parlées *">
-            {errors.langues && (
-              <p className="text-xs text-[#C9A96E] mb-3">{errors.langues}</p>
-            )}
+          <FormSection step="03" title={s.languages}>
+            {errors.langues && <p className="text-xs text-[#C9A96E] mb-3">{errors.langues}</p>}
             <div className="flex flex-wrap gap-2">
-              {LANGUAGES.map((l) => (
-                <button
-                  key={l.id} type="button" onClick={() => toggleLangue(l.id)}
+              {languages.map((l) => (
+                <button key={l.id} type="button" onClick={() => toggleLangue(l.id)}
                   className={`px-5 py-2.5 text-xs uppercase tracking-wider font-medium border transition-all ${
                     form.langues.includes(l.id)
                       ? 'bg-[#C9A96E] text-white border-[#C9A96E]'
                       : 'bg-white text-[#6B6560] border-[#E5DDD0] hover:border-[#C9A96E] hover:text-[#C9A96E]'
-                  }`}
-                >
+                  }`}>
                   {l.label}
                 </button>
               ))}
             </div>
           </FormSection>
 
-          <FormSection step="04" title="Poste souhaité">
-            <Field label="Enseigne préférée *" error={errors.magasinPrefere}>
+          <FormSection step="04" title={s.position}>
+            <Field label={fl.magasinPrefere} error={errors.magasinPrefere}>
               <SelectField value={form.magasinPrefere} onChange={(e) => set('magasinPrefere', e.target.value)} hasError={!!errors.magasinPrefere}>
-                <option value="">Sélectionnez une enseigne</option>
-                {STORES.filter((s) => s.id !== 'all').map((s) => (
-                  <option key={s.id} value={s.label}>{s.label}</option>
-                ))}
+                <option value="">{pl.magasin}</option>
+                {stores.map((st) => <option key={st.id} value={st.label}>{st.label}</option>)}
               </SelectField>
             </Field>
-            <Field label="Mall préféré">
+            <Field label={fl.mall}>
               <SelectField value={form.mall} onChange={(e) => set('mall', e.target.value)} hasError={false}>
-                <option value="">Sélectionnez un mall</option>
-                {MALLS.filter((m) => m.id !== 'all').map((m) => (
-                  <option key={m.id} value={m.label}>{m.label}</option>
-                ))}
+                <option value="">{pl.mall}</option>
+                {malls.map((m) => <option key={m.id} value={m.label}>{m.label}</option>)}
               </SelectField>
             </Field>
-            <Field label="Expérience professionnelle *" error={errors.experience}>
+            <Field label={fl.experience} error={errors.experience}>
               <SelectField value={form.experience} onChange={(e) => set('experience', e.target.value)} hasError={!!errors.experience}>
-                <option value="">Sélectionnez</option>
-                {EXPERIENCES.map((ex) => (
-                  <option key={ex.id} value={ex.label}>{ex.label}</option>
-                ))}
+                <option value="">{pl.experience}</option>
+                {experiences.map((ex) => <option key={ex.id} value={ex.label}>{ex.label}</option>)}
               </SelectField>
             </Field>
           </FormSection>
 
-          <FormSection step="05" title="CV & Message">
-            <Field label="CV — PDF ou Word · max 5 Mo" error={errors.cv}>
+          <FormSection step="05" title={s.cv}>
+            <Field label={fl.cv} error={errors.cv}>
               {form.cv ? (
                 <div className="flex items-center gap-4 border border-[#C9A96E]/30 bg-[#FBF7F1] px-4 py-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-[#1C1C1C] font-medium truncate">{form.cv.name}</p>
                     <p className="text-xs text-[#6B6560] font-light">{(form.cv.size / 1024).toFixed(0)} Ko</p>
                   </div>
-                  <button
-                    type="button" onClick={() => set('cv', null)}
-                    className="p-1 text-[#6B6560] hover:text-[#C9A96E] transition-colors"
-                    aria-label="Supprimer le fichier"
-                  >
+                  <button type="button" onClick={() => set('cv', null)} className="p-1 text-[#6B6560] hover:text-[#C9A96E] transition-colors" aria-label="Supprimer">
                     <X size={15} />
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button" onClick={() => fileRef.current?.click()}
-                  className="w-full border border-dashed border-[#E5DDD0] hover:border-[#C9A96E] py-8 text-center transition-colors group"
-                >
+                <button type="button" onClick={() => fileRef.current?.click()}
+                  className="w-full border border-dashed border-[#E5DDD0] hover:border-[#C9A96E] py-8 text-center transition-colors group">
                   <Upload size={18} className="mx-auto mb-2 text-[#E5DDD0] group-hover:text-[#C9A96E] transition-colors" />
-                  <p className="text-xs uppercase tracking-wider text-[#6B6560] group-hover:text-[#C9A96E] transition-colors font-medium">
-                    Téléverser votre CV
-                  </p>
-                  <p className="text-xs text-[#6B6560]/50 mt-1 font-light">PDF · DOC · DOCX</p>
+                  <p className="text-xs uppercase tracking-wider text-[#6B6560] group-hover:text-[#C9A96E] transition-colors font-medium">{pl.cvUpload}</p>
+                  <p className="text-xs text-[#6B6560]/50 mt-1 font-light">{pl.cvFormats}</p>
                 </button>
               )}
               <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" onChange={handleFile} className="hidden" />
             </Field>
-
-            <Field label="Message (optionnel)">
-              <textarea
-                value={form.message}
-                onChange={(e) => set('message', e.target.value)}
-                placeholder="Parlez-nous de votre motivation, de vos disponibilités…"
-                rows={4}
-                className="w-full bg-[#FAF8F5] border border-[#E5DDD0] px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#6B6560]/50 font-light focus:outline-none focus:border-[#C9A96E] resize-none transition-colors"
-              />
+            <Field label={fl.message}>
+              <textarea value={form.message} onChange={(e) => set('message', e.target.value)}
+                placeholder={pl.message} rows={4}
+                className="w-full bg-[#FAF8F5] border border-[#E5DDD0] px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#6B6560]/50 font-light focus:outline-none focus:border-[#C9A96E] resize-none transition-colors" />
             </Field>
           </FormSection>
 
-          {/* Privacy */}
-          <p className="text-xs text-[#6B6560]/60 leading-relaxed font-light">
-            En soumettant ce formulaire, vous acceptez que vos données personnelles soient traitées par le Groupe AKSAL dans le cadre de sa politique de recrutement, de façon confidentielle et sans transmission à des tiers.
-          </p>
+          <p className="text-xs text-[#6B6560]/60 leading-relaxed font-light">{c.privacy}</p>
 
-          {/* Submit */}
-          <button
-            type="submit" disabled={submitting}
-            className="w-full bg-[#C9A96E] hover:bg-[#A8813F] disabled:opacity-60 text-white text-xs uppercase tracking-[0.15em] font-medium py-4 transition-colors flex items-center justify-center gap-3"
-          >
+          <button type="submit" disabled={submitting}
+            className="w-full bg-[#C9A96E] hover:bg-[#A8813F] disabled:opacity-60 text-white text-xs uppercase tracking-[0.15em] font-medium py-4 transition-colors flex items-center justify-center gap-3">
             {submitting ? (
-              <>
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Envoi en cours…
-              </>
-            ) : (
-              'Envoyer ma candidature'
-            )}
+              <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>{c.submitting}</>
+            ) : c.submitLabel}
           </button>
         </form>
       </section>
@@ -333,8 +253,7 @@ export default function ApplyPage() {
   );
 }
 
-/* ── Sub-components ─────────────────────────────── */
-
+/* ── Sub-components ──────────────────────────────── */
 function FormSection({ step, title, children }) {
   return (
     <div className="space-y-5">
@@ -359,20 +278,16 @@ function Field({ label, error, children }) {
 
 function Input({ hasError, ...props }) {
   return (
-    <input
-      {...props}
-      className={`w-full bg-[#FAF8F5] border ${hasError ? 'border-[#C9A96E]' : 'border-[#E5DDD0]'} px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#6B6560]/50 font-light focus:outline-none focus:border-[#C9A96E] transition-colors`}
-    />
+    <input {...props}
+      className={`w-full bg-[#FAF8F5] border ${hasError ? 'border-[#C9A96E]' : 'border-[#E5DDD0]'} px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#6B6560]/50 font-light focus:outline-none focus:border-[#C9A96E] transition-colors`} />
   );
 }
 
 function SelectField({ hasError, children, ...props }) {
   return (
     <div className="relative">
-      <select
-        {...props}
-        className={`w-full appearance-none bg-[#FAF8F5] border ${hasError ? 'border-[#C9A96E]' : 'border-[#E5DDD0]'} px-4 py-3 pr-8 text-sm text-[#1C1C1C] font-light focus:outline-none focus:border-[#C9A96E] transition-colors cursor-pointer`}
-      >
+      <select {...props}
+        className={`w-full appearance-none bg-[#FAF8F5] border ${hasError ? 'border-[#C9A96E]' : 'border-[#E5DDD0]'} px-4 py-3 pr-8 text-sm text-[#1C1C1C] font-light focus:outline-none focus:border-[#C9A96E] transition-colors cursor-pointer`}>
         {children}
       </select>
       <ChevronDown size={13} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#C9A96E]" />

@@ -1,0 +1,63 @@
+{
+  "_comment": "Fichier de configuration — modifiable directement sur GitHub sans toucher au code.",
+
+  "malls": [
+    { "id": "all",                    "label": "Tous les malls" },
+    { "id": "morocco-mall-casa",      "label": "Morocco Mall Casablanca" },
+    { "id": "morocco-mall-marrakech", "label": "Morocco Mall Marrakech" },
+    { "id": "siege-social",           "label": "Siège Social" }
+  ],
+
+  "stores": [
+    { "id": "all",           "label": "Toutes les enseignes" },
+    { "id": "zara",          "label": "Zara" },
+    { "id": "oysho",         "label": "Oysho" },
+    { "id": "bershka",       "label": "Bershka" },
+    { "id": "stradivarius",  "label": "Stradivarius" },
+    { "id": "pull-bear",     "label": "Pull & Bear" },
+    { "id": "massimo-dutti", "label": "Massimo Dutti" },
+    { "id": "zara-home",     "label": "Zara Home" },
+    { "id": "louis-vuitton", "label": "Louis Vuitton" },
+    { "id": "bvlgari",       "label": "Bvlgari" },
+    { "id": "cartier",       "label": "Cartier" },
+    { "id": "chanel",        "label": "Chanel" },
+    { "id": "chloe",         "label": "Chloé" },
+    { "id": "tiffany",       "label": "Tiffany & Co." },
+    { "id": "mango",         "label": "Mango" },
+    { "id": "aksal-group",   "label": "Groupe AKSAL" }
+  ],
+
+  "cities": [
+    { "id": "all",        "label": "Toutes les villes" },
+    { "id": "Casablanca", "label": "Casablanca" },
+    { "id": "Marrakech",  "label": "Marrakech" }
+  ],
+
+  "contractTypes": [
+    { "id": "all",   "label": "Tous les contrats" },
+    { "id": "cdi",   "label": "CDI" },
+    { "id": "cdd",   "label": "CDD" },
+    { "id": "stage", "label": "Stage" }
+  ],
+
+  "formCities": [
+    "Casablanca", "Marrakech", "Rabat", "Fès", "Tanger",
+    "Agadir", "Meknès", "Oujda", "Kénitra", "Tétouan", "Autre"
+  ],
+
+  "languages": [
+    { "id": "arabe",    "label": "Arabe" },
+    { "id": "francais", "label": "Français" },
+    { "id": "anglais",  "label": "Anglais" },
+    { "id": "espagnol", "label": "Espagnol" },
+    { "id": "autre",    "label": "Autre" }
+  ],
+
+  "experiences": [
+    { "id": "aucune",  "label": "Aucune expérience" },
+    { "id": "moins1",  "label": "Moins d'1 an" },
+    { "id": "1-2",     "label": "1 à 2 ans" },
+    { "id": "3-5",     "label": "3 à 5 ans" },
+    { "id": "plus5",   "label": "Plus de 5 ans" }
+  ]
+}

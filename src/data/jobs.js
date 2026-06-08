@@ -24,6 +24,12 @@ export const STORES = [
   { id: 'aksal-group', label: 'Groupe AKSAL' },
 ];
 
+export const CITIES = [
+  { id: 'all', label: 'Toutes les villes' },
+  { id: 'Casablanca', label: 'Casablanca' },
+  { id: 'Marrakech', label: 'Marrakech' },
+];
+
 export const CONTRACT_TYPES = [
   { id: 'all', label: 'Tous les contrats' },
   { id: 'cdi', label: 'CDI' },

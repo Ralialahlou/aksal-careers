@@ -8,7 +8,7 @@ function daysSince(dateStr) {
   return `Il y a ${Math.floor(diff)} jours`;
 }
 
-export default function JobCard({ job }) {
+export default function JobCard({ job, ctaLabel = 'Postuler' }) {
   return (
     <Link
       to={`/candidature?poste=${encodeURIComponent(job.title)}&enseigne=${encodeURIComponent(job.storeName)}&mall=${encodeURIComponent(job.mallName)}`}
@@ -74,7 +74,7 @@ export default function JobCard({ job }) {
       {/* CTA footer */}
       <div className="px-6 py-3.5 border-t border-[#E5DDD0] flex items-center justify-between">
         <span className="text-[0.65rem] uppercase tracking-[0.12em] font-medium text-[#6B6560] group-hover:text-[#C9A96E] transition-colors">
-          Postuler
+          {ctaLabel}
         </span>
         <span className="text-[#C9A96E] text-sm group-hover:translate-x-1 transition-transform inline-block">→</span>
       </div>
