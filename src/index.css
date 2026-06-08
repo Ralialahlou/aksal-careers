@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Morocco Mall color palette */
+  --color-gold:        #C9A96E;
+  --color-gold-dark:   #A8813F;
+  --color-gold-light:  #EAD8B8;
+  --color-gold-wash:   #FBF7F1;
+  --color-charcoal:    #1C1C1C;
+  --color-charcoal-80: #3D3D3D;
+  --color-stone:       #6B6560;
+  --color-border:      #E5DDD0;
+  --color-white:       #FFFFFF;
+  --color-offwhite:    #FAF8F5;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: #FFFFFF;
+  color: #1C1C1C;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: 16px;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Utility: display font */
+.font-display {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
