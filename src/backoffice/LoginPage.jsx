@@ -35,7 +35,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-10">
           <img
-            src="/aksal-logo.png"
+            src={`${import.meta.env.BASE_URL}aksal-logo.png`}
             alt="Groupe AKSAL"
             className="h-16 w-auto mx-auto mb-6"
             style={{ filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.08))' }}

@@ -10,7 +10,7 @@ function useJsonFile(filename) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`/data/${filename}`)
+    fetch(`${import.meta.env.BASE_URL}data/${filename}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load ${filename}: ${res.status}`);
         return res.json();

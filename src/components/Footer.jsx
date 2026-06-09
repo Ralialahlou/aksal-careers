@@ -12,7 +12,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="flex-1 max-w-xs">
             <img
-              src="/aksal-logo.png"
+              src={`${import.meta.env.BASE_URL}aksal-logo.png`}
               alt="Groupe AKSAL"
               className="h-14 w-auto object-contain brightness-0 invert mb-6"
             />

@@ -29,7 +29,7 @@ export default function BackofficeLayout() {
         <div className="max-w-7xl mx-auto px-5 flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <img
-              src="/aksal-logo.png"
+              src={`${import.meta.env.BASE_URL}aksal-logo.png`}
               alt="AKSAL"
               className="h-8 w-auto object-contain"
               style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.06))' }}
