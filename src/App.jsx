@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { HashRouter, Routes, Route, Outlet } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CareersPage from './pages/CareersPage';
@@ -17,7 +17,7 @@ function PublicLayout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<CareersPage />} />
@@ -25,6 +25,6 @@ export default function App() {
         </Route>
         <Route path="/backoffice/*" element={<BackofficeRouter />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
