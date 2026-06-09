@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CheckCircle, Upload, X, ChevronDown } from 'lucide-react';
+import { Upload, X, ChevronDown } from 'lucide-react';
 import { useAppData } from '../hooks/useData';
 
 const initialForm = {
@@ -91,29 +91,66 @@ export default function ApplyPage() {
 
   /* ── Success ─────────────────────────────────────── */
   if (submitted) {
-    const headline = c.success.headline.replace('{prenom}', form.prenom).replace('{nom}', form.nom);
-    const message  = c.success.message.replace('{email}', form.email);
     return (
-      <main className="flex-1 flex items-center justify-center px-5 py-20">
-        <div className="max-w-md w-full text-center">
-          <div className="w-14 h-14 border border-[#C9A96E] flex items-center justify-center mx-auto mb-8">
-            <CheckCircle size={26} className="text-[#C9A96E]" />
-          </div>
-          <p className="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-[#C9A96E] mb-4">{c.success.eyebrow}</p>
-          <h1 className="text-3xl md:text-4xl font-light italic text-[#1C1C1C] mb-5" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
-            {headline}
+      <main className="flex-1 flex flex-col min-h-[calc(100dvh-57px)]">
+        {/* Top gold strip */}
+        <div className="h-0.5 w-full bg-gradient-to-r from-[#C9A96E] via-[#EAD8B8] to-[#C9A96E]" />
+
+        {/* Centred content */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
+
+          {/* Logo */}
+          <img
+            src="/aksal-logo.png"
+            alt="Groupe AKSAL"
+            className="h-20 w-auto object-contain mb-10"
+            style={{ filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.08))' }}
+          />
+
+          {/* Gold divider */}
+          <div className="w-12 h-px bg-[#C9A96E] mb-8" />
+
+          {/* Heading */}
+          <h1
+            className="text-4xl md:text-5xl lg:text-6xl font-light italic text-[#1C1C1C] leading-[1.1] mb-6 max-w-lg"
+            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+          >
+            Merci pour votre intérêt.
           </h1>
-          <div className="w-10 h-px bg-[#C9A96E] mx-auto mb-6" />
-          <p className="text-sm text-[#6B6560] leading-relaxed font-light mb-10">{message}</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="/" className="px-7 py-3 bg-[#C9A96E] text-white text-xs uppercase tracking-[0.12em] font-medium hover:bg-[#A8813F] transition-colors">
-              {c.success.ctaOffers}
+
+          {/* Sub-message */}
+          <p className="text-base md:text-lg text-[#6B6560] font-light leading-relaxed max-w-sm mb-3">
+            Nous avons bien reçu votre candidature.
+          </p>
+          <p className="text-base md:text-lg text-[#6B6560] font-light leading-relaxed max-w-sm mb-10">
+            Notre équipe vous recontactera dans les plus brefs délais.
+          </p>
+
+          {/* Gold divider */}
+          <div className="w-12 h-px bg-[#C9A96E] mb-10" />
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href="/"
+              className="px-8 py-3.5 bg-[#C9A96E] text-white text-xs uppercase tracking-[0.15em] font-medium hover:bg-[#A8813F] transition-colors"
+            >
+              Voir d'autres offres
             </a>
-            <button onClick={() => { setSubmitted(false); setForm(initialForm); }}
-              className="px-7 py-3 border border-[#E5DDD0] text-[#6B6560] text-xs uppercase tracking-[0.12em] font-medium hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors">
-              {c.success.ctaNew}
+            <button
+              onClick={() => { setSubmitted(false); setForm(initialForm); }}
+              className="px-8 py-3.5 border border-[#E5DDD0] text-[#6B6560] text-xs uppercase tracking-[0.15em] font-medium hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors"
+            >
+              Nouvelle candidature
             </button>
           </div>
+        </div>
+
+        {/* Bottom footer strip */}
+        <div className="border-t border-[#E5DDD0] py-5 text-center">
+          <p className="text-[0.65rem] uppercase tracking-[0.15em] text-[#6B6560]/50 font-light">
+            Groupe AKSAL · Morocco Mall · careers@groupeaksal.com
+          </p>
         </div>
       </main>
     );
