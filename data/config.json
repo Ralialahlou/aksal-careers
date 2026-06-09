@@ -24,7 +24,48 @@
     { "id": "chloe",         "label": "Chloé" },
     { "id": "tiffany",       "label": "Tiffany & Co." },
     { "id": "mango",         "label": "Mango" },
+    { "id": "mac-cosmetics", "label": "MAC Cosmetics" },
+    { "id": "yan-one",       "label": "YAN&ONE" },
+    { "id": "lefties",       "label": "Lefties" },
     { "id": "aksal-group",   "label": "Groupe AKSAL" }
+  ],
+
+  "formStores": [
+    "Luxe",
+    "MAC Cosmetics",
+    "Massimo Dutti",
+    "YAN&ONE",
+    "Zara",
+    "Zara Home",
+    "Pull & Bear",
+    "Bershka",
+    "Oysho",
+    "Lefties"
+  ],
+
+  "postes": [
+    "Conseiller(ère) de Vente",
+    "Caissier(ère)",
+    "Réserviste Stock",
+    "Visual Merchandiser / Vitriniste",
+    "Manager",
+    "Directeur(trice) de Magasin",
+    "Autre"
+  ],
+
+  "disponibilites": [
+    "Immédiate",
+    "Sous 15 jours",
+    "Sous 1 mois",
+    "Plus d'1 mois"
+  ],
+
+  "niveauxEtudes": [
+    "Baccalauréat",
+    "Bac+2",
+    "Bac+3",
+    "Bac+5 et plus",
+    "Autre"
   ],
 
   "cities": [
@@ -54,10 +95,9 @@
   ],
 
   "experiences": [
-    { "id": "aucune",  "label": "Aucune expérience" },
-    { "id": "moins1",  "label": "Moins d'1 an" },
-    { "id": "1-2",     "label": "1 à 2 ans" },
-    { "id": "3-5",     "label": "3 à 5 ans" },
-    { "id": "plus5",   "label": "Plus de 5 ans" }
+    { "id": "moins1", "label": "Moins d'1 an" },
+    { "id": "1-2",    "label": "1 à 2 ans" },
+    { "id": "3-5",    "label": "3 à 5 ans" },
+    { "id": "plus5",  "label": "Plus de 5 ans" }
   ]
 }
