@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Phone, Mail, MapPin, Calendar, Briefcase, Building2, Languages } from 'lucide-react';
+import { ArrowLeft, FileText, Download, Phone, Mail, MapPin, Calendar, Briefcase, Building2, Languages } from 'lucide-react';
 import { useCandidatures } from '../hooks/useCandidatures.js';
 import { scoreLabel } from '../utils/scoring.js';
 import { updateCandidatureStatus } from '../utils/storage.js';
@@ -111,14 +111,17 @@ export default function CandidatureProfile() {
           <p className="text-[0.6rem] uppercase tracking-[0.15em] text-[#6B6560] font-medium mb-3">CV joint</p>
           <div className="flex items-center gap-3 bg-[#FBF7F1] border border-[#C9A96E]/20 px-4 py-3">
             <FileText size={16} className="text-[#C9A96E] shrink-0" />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm text-[#1C1C1C] font-medium truncate">{c.cv.name}</p>
               <p className="text-xs text-[#6B6560] font-light">{c.cv.size ? `${(c.cv.size / 1024).toFixed(0)} Ko` : 'Taille inconnue'}</p>
             </div>
+            <CvDownloadButton cv={c.cv} />
           </div>
-          <p className="text-[0.6rem] text-[#6B6560]/40 mt-2 font-light">
-            Le fichier CV est stocké localement dans ce navigateur et ne peut pas être téléchargé ici.
-          </p>
+          {!c.cv.data && (
+            <p className="text-[0.6rem] text-[#6B6560]/40 mt-2 font-light">
+              Fichier non disponible — les CVs des candidatures importées n'ont pas de contenu téléchargeable.
+            </p>
+          )}
         </div>
       )}
 
@@ -214,5 +217,39 @@ function InfoRow({ icon, label, value }) {
         <p className="text-sm text-[#1C1C1C] font-light break-words">{value || '—'}</p>
       </div>
     </div>
+  );
+}
+
+function CvDownloadButton({ cv }) {
+  if (!cv?.data) {
+    return (
+      <button
+        disabled
+        title="Fichier non disponible"
+        className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E5DDD0] text-[#6B6560]/40 text-xs font-medium uppercase tracking-wider cursor-not-allowed shrink-0"
+      >
+        <Download size={12} />
+        <span className="hidden sm:inline">Télécharger</span>
+      </button>
+    );
+  }
+
+  function handleDownload() {
+    const link = document.createElement('a');
+    link.href = cv.data;
+    link.download = cv.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  return (
+    <button
+      onClick={handleDownload}
+      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C9A96E] hover:bg-[#A8813F] text-white text-xs font-medium uppercase tracking-wider transition-colors shrink-0"
+    >
+      <Download size={12} />
+      <span className="hidden sm:inline">Télécharger</span>
+    </button>
   );
 }

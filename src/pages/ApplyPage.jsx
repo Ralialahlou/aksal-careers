@@ -74,8 +74,20 @@ export default function ApplyPage() {
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      const cvMeta = form.cv ? { name: form.cv.name, size: form.cv.size } : null;
+
+    const readFileAsDataUrl = (file) =>
+      new Promise((resolve) => {
+        if (!file) { resolve(null); return; }
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
+
+    readFileAsDataUrl(form.cv).then((dataUrl) => {
+      const cvMeta = form.cv
+        ? { name: form.cv.name, size: form.cv.size, type: form.cv.type, data: dataUrl }
+        : null;
       const { score, scoreBreakdown } = scoreCandidature({
         langues: form.langues,
         experience: form.experience,
@@ -106,7 +118,7 @@ export default function ApplyPage() {
       setSubmitting(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 1500);
+    });
   }
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#C9A96E] border-t-transparent rounded-full animate-spin" /></div>;
