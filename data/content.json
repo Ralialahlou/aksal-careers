@@ -1,0 +1,115 @@
+{
+  "_comment": "Textes de l'interface — modifiable directement sur GitHub sans toucher au code.",
+
+  "header": {
+    "logoAlt": "Groupe AKSAL",
+    "navLinks": [
+      { "to": "/",            "label": "Offres d'emploi" },
+      { "to": "/candidature", "label": "Candidature" }
+    ],
+    "linkedinUrl": "https://www.linkedin.com/company/groupe-aksal",
+    "ctaLabel": "Postuler"
+  },
+
+  "careers": {
+    "eyebrow": "Carrières · Groupe AKSAL",
+    "headline": "Rejoignez\nl'excellence.",
+    "subheadline": "Découvrez nos opportunités au sein de Morocco Mall Casablanca, Morocco Mall Marrakech, et les plus grandes maisons de mode et de luxe du groupe.",
+    "searchPlaceholder": "Rechercher un poste, une enseigne, une ville…",
+    "filters": {
+      "mall":     "Mall",
+      "store":    "Enseigne",
+      "contract": "Contrat",
+      "city":     "Ville",
+      "clear":    "Effacer"
+    },
+    "emptyState": {
+      "eyebrow":  "Aucun résultat",
+      "headline": "Aucune offre trouvée",
+      "sub":      "Modifiez vos critères ou revenez bientôt.",
+      "reset":    "Réinitialiser"
+    },
+    "spontaneous": {
+      "eyebrow":  "Candidature spontanée",
+      "headline": "Votre poste idéal\nn'est pas listé ?",
+      "sub":      "Déposez votre profil et nous vous contacterons dès qu'une opportunité se présente.",
+      "cta":      "Déposer ma candidature"
+    }
+  },
+
+  "jobCard": {
+    "ctaLabel": "Postuler"
+  },
+
+  "apply": {
+    "eyebrow":            "Candidature · Groupe AKSAL",
+    "headlineDefault":    "Déposez votre\ncandidature.",
+    "headlineWithJob":    "Postuler — {poste}",
+    "sections": {
+      "identity":   "Informations personnelles",
+      "contact":    "Coordonnées",
+      "languages":  "Langues parlées *",
+      "position":   "Poste souhaité",
+      "cv":         "CV & Message"
+    },
+    "fields": {
+      "nom":             "Nom *",
+      "prenom":          "Prénom *",
+      "dateNaissance":   "Date de naissance *",
+      "email":           "Adresse e-mail *",
+      "telephone":       "Téléphone *",
+      "ville":           "Ville de résidence *",
+      "magasinPrefere":  "Enseigne préférée *",
+      "mall":            "Mall préféré",
+      "experience":      "Expérience professionnelle *",
+      "cv":              "CV — PDF ou Word · max 5 Mo",
+      "message":         "Message (optionnel)"
+    },
+    "placeholders": {
+      "nom":          "El Alaoui",
+      "prenom":       "Karim",
+      "email":        "karim@exemple.com",
+      "telephone":    "+212 6 00 00 00 00",
+      "ville":        "Sélectionnez votre ville",
+      "magasin":      "Sélectionnez une enseigne",
+      "mall":         "Sélectionnez un mall",
+      "experience":   "Sélectionnez",
+      "message":      "Parlez-nous de votre motivation, de vos disponibilités…",
+      "cvUpload":     "Téléverser votre CV",
+      "cvFormats":    "PDF · DOC · DOCX"
+    },
+    "submitLabel":    "Envoyer ma candidature",
+    "submitting":     "Envoi en cours…",
+    "privacy":        "En soumettant ce formulaire, vous acceptez que vos données personnelles soient traitées par le Groupe AKSAL dans le cadre de sa politique de recrutement, de façon confidentielle et sans transmission à des tiers.",
+    "success": {
+      "eyebrow":     "Candidature reçue",
+      "headline":    "Merci {prenom} {nom} !",
+      "message":     "Votre candidature a bien été reçue. Notre équipe RH l'examinera dans les meilleurs délais et vous contactera à l'adresse {email}.",
+      "ctaOffers":   "Voir d'autres offres",
+      "ctaNew":      "Nouvelle candidature"
+    }
+  },
+
+  "footer": {
+    "description": "Opérateur de référence du retail et du luxe au Maroc. Rejoignez une équipe animée par la passion de l'excellence.",
+    "columns": {
+      "recruitment": {
+        "heading": "Recrutement",
+        "links": [
+          { "to": "/",            "label": "Offres d'emploi" },
+          { "to": "/candidature", "label": "Candidature spontanée" }
+        ]
+      },
+      "malls": {
+        "heading": "Nos malls",
+        "items": ["Morocco Mall Casablanca", "Morocco Mall Marrakech", "Siège Social · Casablanca"]
+      },
+      "contact": {
+        "heading": "Contact",
+        "email": "careers@groupeaksal.com"
+      }
+    },
+    "copyright": "© 2026 Groupe AKSAL. Tous droits réservés.",
+    "tagline":   "Morocco Mall · Casablanca · Marrakech"
+  }
+}
