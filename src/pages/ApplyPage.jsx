@@ -8,7 +8,7 @@ import { scoreCandidature } from '../utils/scoring.js';
 const initialForm = {
   nom: '', prenom: '',
   telephone: '', email: '', ville: '', adresse: '',
-  magasinSouhaite: '', posteRecherche: '', posteAutre: '',
+  magasinSouhaite: '', posteRecherche: '', posteAutre: '', villesSouhaitees: [],
   disponibilite: '',
   experienceRetail: '',
   annéesExperience: '', dernierPoste: '', dernierEmployeur: '', secteurActivite: '',
@@ -41,6 +41,12 @@ export default function ApplyPage() {
     set('langues', form.langues.includes(id)
       ? form.langues.filter((l) => l !== id)
       : [...form.langues, id]);
+  }
+
+  function toggleVille(v) {
+    set('villesSouhaitees', form.villesSouhaitees.includes(v)
+      ? form.villesSouhaitees.filter((x) => x !== v)
+      : [...form.villesSouhaitees, v]);
   }
 
   function handleFile(e) {
@@ -132,6 +138,7 @@ export default function ApplyPage() {
         adresse:          form.adresse,
         magasinSouhaite:  form.magasinSouhaite,
         posteRecherche:   form.posteRecherche === 'Autre' ? form.posteAutre : form.posteRecherche,
+        villesSouhaitees: form.villesSouhaitees,
         disponibilite:    form.disponibilite,
         experienceRetail: form.experienceRetail,
         annéesExperience: form.annéesExperience,
@@ -162,13 +169,14 @@ export default function ApplyPage() {
   const pl = c.placeholders;
   const s  = c.sections;
 
-  const formStores   = config.formStores || [];
-  const postes       = config.postes     || [];
-  const disponibilites = config.disponibilites || [];
-  const niveauxEtudes  = config.niveauxEtudes  || [];
-  const languages    = config.languages  || [];
-  const experiences  = config.experiences || [];
-  const formCities   = config.formCities || [];
+  const formStores      = config.formStores      || [];
+  const postes          = config.postes          || [];
+  const villesSouh      = config.villesSouhaitees || [];
+  const disponibilites  = config.disponibilites  || [];
+  const niveauxEtudes   = config.niveauxEtudes   || [];
+  const languages       = config.languages       || [];
+  const experiences     = config.experiences     || [];
+  const formCities      = config.formCities      || [];
 
   /* ── Success ─────────────────────────────────────── */
   if (submitted) {
@@ -289,6 +297,24 @@ export default function ApplyPage() {
                 <Input type="text" value={form.posteAutre} onChange={(e) => set('posteAutre', e.target.value)} placeholder={pl.posteAutre} hasError={!!errors.posteAutre} />
               </Field>
             )}
+            <Field label={fl.villesSouhaitees}>
+              <div className="flex flex-wrap gap-2">
+                {villesSouh.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => toggleVille(v)}
+                    className={`px-4 py-2 text-xs font-medium border transition-all ${
+                      form.villesSouhaitees.includes(v)
+                        ? 'bg-[#C9A96E] text-white border-[#C9A96E]'
+                        : 'bg-white text-[#6B6560] border-[#E5DDD0] hover:border-[#C9A96E] hover:text-[#C9A96E]'
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </Field>
           </FormSection>
 
           {/* 03 — Disponibilité */}

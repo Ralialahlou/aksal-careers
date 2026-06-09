@@ -96,9 +96,12 @@ export default function CandidatureProfile() {
         </InfoCard>
 
         <InfoCard title="Candidature">
-          <InfoRow icon={<Building2 size={13} />} label="Magasin"  value={c.magasinSouhaite || c.magasinPrefere || '—'} />
-          <InfoRow icon={<Briefcase size={13} />} label="Poste"    value={c.posteRecherche || '—'} />
+          <InfoRow icon={<Building2 size={13} />} label="Magasin"      value={c.magasinSouhaite || c.magasinPrefere || '—'} />
+          <InfoRow icon={<Briefcase size={13} />} label="Poste"        value={c.posteRecherche || '—'} />
           <InfoRow icon={<Clock size={13} />}     label="Disponibilité" value={c.disponibilite || '—'} />
+          {c.villesSouhaitees?.length > 0 && (
+            <InfoRow icon={<MapPin size={13} />}  label="Villes souhaitées" value={c.villesSouhaitees.join(', ')} />
+          )}
         </InfoCard>
 
         <InfoCard title="Expérience professionnelle">
