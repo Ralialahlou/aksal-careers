@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Upload, X, ChevronDown } from 'lucide-react';
 import { useAppData } from '../hooks/useData';
+import { addCandidature } from '../utils/storage.js';
+import { scoreCandidature } from '../utils/scoring.js';
 
 const initialForm = {
   nom: '', prenom: '', email: '', telephone: '',
@@ -72,7 +74,39 @@ export default function ApplyPage() {
       return;
     }
     setSubmitting(true);
-    setTimeout(() => { setSubmitting(false); setSubmitted(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 1500);
+    setTimeout(() => {
+      const cvMeta = form.cv ? { name: form.cv.name, size: form.cv.size } : null;
+      const { score, scoreBreakdown } = scoreCandidature({
+        langues: form.langues,
+        experience: form.experience,
+        cv: cvMeta,
+        message: form.message,
+      });
+      addCandidature({
+        id: crypto.randomUUID(),
+        nom: form.nom,
+        prenom: form.prenom,
+        email: form.email,
+        telephone: form.telephone,
+        dateNaissance: form.dateNaissance,
+        ville: form.ville,
+        langues: form.langues,
+        magasinPrefere: form.magasinPrefere,
+        mall: form.mall,
+        experience: form.experience,
+        poste: form.poste,
+        enseigne: form.enseigne,
+        cv: cvMeta,
+        message: form.message,
+        score,
+        scoreBreakdown,
+        status: 'À contacter',
+        submittedAt: new Date().toISOString(),
+      });
+      setSubmitting(false);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 1500);
   }
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#C9A96E] border-t-transparent rounded-full animate-spin" /></div>;
