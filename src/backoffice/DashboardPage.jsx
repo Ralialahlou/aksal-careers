@@ -1,51 +1,57 @@
 import { useMemo } from 'react';
 import { useCandidatures } from '../hooks/useCandidatures.js';
 import { scoreLabel } from '../utils/scoring.js';
-import { Users, MapPin, Building2, TrendingUp } from 'lucide-react';
-
-function calcAge(dateNaissance) {
-  return Math.floor((Date.now() - new Date(dateNaissance).getTime()) / (365.25 * 24 * 3600 * 1000));
-}
+import { Users, Building2, TrendingUp, Clock } from 'lucide-react';
 
 export default function DashboardPage() {
   const { candidatures } = useCandidatures();
   const total = candidatures.length;
 
   const stats = useMemo(() => {
-    const byMall = {}, byCity = {}, byAge = { '18–24':0,'25–34':0,'35–44':0,'45+':0 };
-    const byExp  = {}, byStatus = {}, byScore = { 'Excellent':0,'Bon':0,'Moyen':0,'Faible':0 };
+    const byMagasin   = {};
+    const byCity      = {};
+    const byPoste     = {};
+    const byDispo     = {};
+    const byEtudes    = {};
+    const byExp       = {};
+    const byStatus    = {};
+    const byScore     = { 'Excellent': 0, 'Bon': 0, 'Moyen': 0, 'Faible': 0 };
+    let withRetailExp = 0;
+    let disponibleNow = 0;
 
     candidatures.forEach((c) => {
-      // mall
-      const m = c.mall || 'Non précisé';
-      byMall[m] = (byMall[m] || 0) + 1;
-      // city
-      const ci = c.ville || 'Autre';
-      byCity[ci] = (byCity[ci] || 0) + 1;
-      // age
-      if (c.dateNaissance) {
-        const age = calcAge(c.dateNaissance);
-        if (age < 25) byAge['18–24']++;
-        else if (age < 35) byAge['25–34']++;
-        else if (age < 45) byAge['35–44']++;
-        else byAge['45+']++;
-      }
-      // experience
-      const exp = c.experience || 'Non précisé';
+      const magasin = c.magasinSouhaite || c.magasinPrefere || 'Non précisé';
+      byMagasin[magasin] = (byMagasin[magasin] || 0) + 1;
+
+      const city = c.ville || 'Autre';
+      byCity[city] = (byCity[city] || 0) + 1;
+
+      const poste = c.posteRecherche || 'Non précisé';
+      byPoste[poste] = (byPoste[poste] || 0) + 1;
+
+      const dispo = c.disponibilite || 'Non précisé';
+      byDispo[dispo] = (byDispo[dispo] || 0) + 1;
+      if (c.disponibilite === 'Immédiate') disponibleNow++;
+
+      const etudes = c.niveauEtudes || 'Non précisé';
+      byEtudes[etudes] = (byEtudes[etudes] || 0) + 1;
+
+      const exp = c.annéesExperience || c.experience || 'Non précisé';
       byExp[exp] = (byExp[exp] || 0) + 1;
-      // status
+
       byStatus[c.status] = (byStatus[c.status] || 0) + 1;
-      // score range
+
       const { label } = scoreLabel(c.score ?? 0);
       byScore[label]++;
+
+      if (c.experienceRetail === 'oui') withRetailExp++;
     });
 
-    return { byMall, byCity, byAge, byExp, byStatus, byScore };
+    return { byMagasin, byCity, byPoste, byDispo, byEtudes, byExp, byStatus, byScore, withRetailExp, disponibleNow };
   }, [candidatures]);
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <p className="text-[0.6rem] uppercase tracking-[0.2em] text-[#C9A96E] font-medium mb-1">Tableau de bord</p>
         <h1 className="text-2xl font-light text-[#1C1C1C]" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
@@ -55,10 +61,10 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={<Users size={18} />} label="Total candidatures" value={total} />
-        <StatCard icon={<Building2 size={18} />} label="Morocco Mall Casa" value={stats.byMall['Morocco Mall Casablanca'] || 0} />
-        <StatCard icon={<Building2 size={18} />} label="Morocco Mall Marrakech" value={stats.byMall['Morocco Mall Marrakech'] || 0} />
-        <StatCard icon={<TrendingUp size={18} />} label="Score ≥ 80 (Excellent)" value={stats.byScore['Excellent'] || 0} accent />
+        <StatCard icon={<Users size={18} />}     label="Total candidatures"   value={total} />
+        <StatCard icon={<TrendingUp size={18} />} label="Score Excellent (≥80)" value={stats.byScore['Excellent'] || 0} accent />
+        <StatCard icon={<Clock size={18} />}     label="Disponibles immédiatement" value={stats.disponibleNow} />
+        <StatCard icon={<Building2 size={18} />} label="Avec expérience retail" value={stats.withRetailExp} />
       </div>
 
       {/* Status row */}
@@ -76,23 +82,52 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Charts row 1 */}
+      {/* Charts row 1 — magasin + ville */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ChartCard title="Par mall" data={stats.byMall} total={total} />
-        <ChartCard title="Par ville" data={stats.byCity} total={total} topN={6} />
+        <ChartCard title="Par magasin souhaité" data={stats.byMagasin} total={total} topN={8} />
+        <ChartCard title="Par ville"            data={stats.byCity}    total={total} topN={6} />
       </div>
 
-      {/* Charts row 2 */}
+      {/* Charts row 2 — poste + disponibilité */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ChartCard title="Tranche d'âge" data={stats.byAge} total={total} ordered={['18–24','25–34','35–44','45+']} />
-        <ChartCard title="Années d'expérience" data={stats.byExp} total={total}
-          ordered={["Aucune expérience","Moins d'1 an","1 à 2 ans","3 à 5 ans","Plus de 5 ans"]} />
+        <ChartCard
+          title="Par poste recherché"
+          data={stats.byPoste}
+          total={total}
+          ordered={['Conseiller(ère) de Vente','Caissier(ère)','Réserviste Stock','Visual Merchandiser / Vitriniste','Manager','Directeur(trice) de Magasin']}
+        />
+        <ChartCard
+          title="Disponibilité"
+          data={stats.byDispo}
+          total={total}
+          ordered={['Immédiate','Sous 15 jours','Sous 1 mois',"Plus d'1 mois"]}
+          colors={{ 'Immédiate': '#10b981', 'Sous 15 jours': '#3b82f6', 'Sous 1 mois': '#f59e0b', "Plus d'1 mois": '#ef4444' }}
+        />
+      </div>
+
+      {/* Charts row 3 — expérience + formation */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ChartCard
+          title="Années d'expérience"
+          data={stats.byExp}
+          total={total}
+          ordered={["Moins d'1 an", '1 à 2 ans', '3 à 5 ans', 'Plus de 5 ans', 'Non précisé']}
+        />
+        <ChartCard
+          title="Niveau d'études"
+          data={stats.byEtudes}
+          total={total}
+          ordered={['Baccalauréat', 'Bac+2', 'Bac+3', 'Bac+5 et plus', 'Autre']}
+        />
       </div>
 
       {/* Score distribution */}
-      <ChartCard title="Distribution des scores" data={stats.byScore} total={total}
-        ordered={['Excellent','Bon','Moyen','Faible']}
-        colors={{ Excellent:'#10b981', Bon:'#3b82f6', Moyen:'#f59e0b', Faible:'#ef4444' }}
+      <ChartCard
+        title="Distribution des scores"
+        data={stats.byScore}
+        total={total}
+        ordered={['Excellent', 'Bon', 'Moyen', 'Faible']}
+        colors={{ Excellent: '#10b981', Bon: '#3b82f6', Moyen: '#f59e0b', Faible: '#ef4444' }}
       />
     </div>
   );
@@ -115,15 +150,24 @@ function StatCard({ icon, label, value, accent }) {
 }
 
 function ChartCard({ title, data, total, topN, ordered, colors }) {
-  const entries = useMemo(() => {
+  const entries = (() => {
     let items = ordered
-      ? ordered.map((k) => [k, data[k] || 0])
+      ? ordered.map((k) => [k, data[k] || 0]).filter(([, v]) => v > 0)
       : Object.entries(data).sort((a, b) => b[1] - a[1]);
     if (topN) items = items.slice(0, topN);
     return items;
-  }, [data, ordered, topN]);
+  })();
 
   const max = Math.max(...entries.map(([, v]) => v), 1);
+
+  if (entries.length === 0) {
+    return (
+      <div className="bg-white border border-[#E5DDD0] p-5 rounded">
+        <p className="text-[0.6rem] uppercase tracking-[0.15em] text-[#6B6560] font-medium mb-4">{title}</p>
+        <p className="text-xs text-[#6B6560]/40 font-light">Aucune donnée.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-[#E5DDD0] p-5 rounded">
@@ -134,7 +178,7 @@ function ChartCard({ title, data, total, topN, ordered, colors }) {
           const barColor = colors?.[label] || '#C9A96E';
           return (
             <div key={label} className="flex items-center gap-3">
-              <span className="w-32 text-xs text-[#1C1C1C] font-light truncate shrink-0">{label}</span>
+              <span className="w-36 text-xs text-[#1C1C1C] font-light truncate shrink-0">{label}</span>
               <div className="flex-1 bg-[#F0EAE0] h-2 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"

@@ -109,10 +109,17 @@ export default function ApplyPage() {
         : null;
 
       const { score, scoreBreakdown } = scoreCandidature({
-        langues:       form.langues,
-        experience:    form.annéesExperience,
-        cv:            cvMeta,
-        niveauEtudes:  form.niveauEtudes,
+        langues:          form.langues,
+        experienceRetail: form.experienceRetail,
+        annéesExperience: form.annéesExperience,
+        disponibilite:    form.disponibilite,
+        niveauEtudes:     form.niveauEtudes === 'Autre' ? form.niveauEtudesAutre : form.niveauEtudes,
+        cv:               cvMeta,
+        dernierPoste:     form.dernierPoste,
+        dernierEmployeur: form.dernierEmployeur,
+        secteurActivite:  form.secteurActivite,
+        diplomePrincipal: form.diplomePrincipal,
+        adresse:          form.adresse,
       });
 
       addCandidature({

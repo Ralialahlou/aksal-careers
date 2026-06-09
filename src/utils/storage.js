@@ -1,4 +1,4 @@
-const KEY = 'aksal_candidatures';
+const KEY = 'aksal_candidatures_v2';
 
 export function getCandidatures() {
   try {
@@ -14,7 +14,7 @@ export function saveCandidatures(arr) {
 
 export function addCandidature(obj) {
   const arr = getCandidatures();
-  arr.unshift(obj); // newest first
+  arr.unshift(obj);
   saveCandidatures(arr);
 }
 

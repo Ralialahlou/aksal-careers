@@ -4,42 +4,31 @@ import { Search, ChevronUp, ChevronDown, ChevronRight, SlidersHorizontal, X } fr
 import { useCandidatures } from '../hooks/useCandidatures.js';
 import { scoreLabel } from '../utils/scoring.js';
 
-const STATUSES = ['Tous', 'À contacter', 'En cours', 'Retenu', 'Archivé'];
-const EXPERIENCES = [
-  'Toutes',
-  'Aucune expérience',
-  "Moins d'1 an",
-  '1 à 2 ans',
-  '3 à 5 ans',
-  'Plus de 5 ans',
-];
-const AGE_RANGES = ['Tous', '18–24', '25–34', '35–44', '45+'];
-
-function ageRange(dateNaissance) {
-  if (!dateNaissance) return null;
-  const age = Math.floor((Date.now() - new Date(dateNaissance).getTime()) / (365.25 * 24 * 3600 * 1000));
-  if (age < 25) return '18–24';
-  if (age < 35) return '25–34';
-  if (age < 45) return '35–44';
-  return '45+';
-}
+const STATUSES      = ['Tous', 'À contacter', 'En cours', 'Retenu', 'Archivé'];
+const EXPERIENCES   = ['Toutes', "Moins d'1 an", '1 à 2 ans', '3 à 5 ans', 'Plus de 5 ans'];
+const DISPONIBILITES = ['Toutes', 'Immédiate', 'Sous 15 jours', 'Sous 1 mois', "Plus d'1 mois"];
+const NIVEAUX_ETUDES = ['Tous', 'Baccalauréat', 'Bac+2', 'Bac+3', 'Bac+5 et plus', 'Autre'];
+const EXP_RETAIL    = ['Tous', 'Oui', 'Non'];
 
 export default function CandidaturesList() {
   const { candidatures } = useCandidatures();
   const navigate = useNavigate();
-  const [search, setSearch]       = useState('');
-  const [sortKey, setSortKey]     = useState('submittedAt');
-  const [sortDir, setSortDir]     = useState('desc');
+
+  const [search, setSearch]         = useState('');
+  const [sortKey, setSortKey]       = useState('submittedAt');
+  const [sortDir, setSortDir]       = useState('desc');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const [filterStatus, setFilterStatus]   = useState('Tous');
-  const [filterMall, setFilterMall]       = useState('Tous');
-  const [filterCity, setFilterCity]       = useState('Toutes');
-  const [filterLang, setFilterLang]       = useState('Toutes');
-  const [filterExp, setFilterExp]         = useState('Toutes');
-  const [filterAge, setFilterAge]         = useState('Tous');
+  const [filterStatus,   setFilterStatus]   = useState('Tous');
+  const [filterMagasin,  setFilterMagasin]  = useState('Tous');
+  const [filterCity,     setFilterCity]     = useState('Toutes');
+  const [filterLang,     setFilterLang]     = useState('Toutes');
+  const [filterExp,      setFilterExp]      = useState('Toutes');
+  const [filterDispo,    setFilterDispo]    = useState('Toutes');
+  const [filterEtudes,   setFilterEtudes]   = useState('Tous');
+  const [filterExpRetail,setFilterExpRetail]= useState('Tous');
 
-  const malls    = useMemo(() => ['Tous', ...new Set(candidatures.map((c) => c.mall).filter(Boolean))], [candidatures]);
+  const magasins = useMemo(() => ['Tous', ...new Set(candidatures.map((c) => c.magasinSouhaite || c.magasinPrefere).filter(Boolean))], [candidatures]);
   const cities   = useMemo(() => ['Toutes', ...new Set(candidatures.map((c) => c.ville).filter(Boolean))], [candidatures]);
   const langs    = useMemo(() => ['Toutes', ...new Set(candidatures.flatMap((c) => c.langues || []))], [candidatures]);
 
@@ -48,48 +37,60 @@ export default function CandidaturesList() {
 
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter(
-        (c) =>
-          (c.nom + ' ' + c.prenom).toLowerCase().includes(q) ||
-          c.email?.toLowerCase().includes(q) ||
-          (c.magasinSouhaite || c.magasinPrefere || '').toLowerCase().includes(q),
+      list = list.filter((c) =>
+        (c.nom + ' ' + c.prenom).toLowerCase().includes(q) ||
+        c.email?.toLowerCase().includes(q) ||
+        (c.magasinSouhaite || c.magasinPrefere || '').toLowerCase().includes(q) ||
+        (c.posteRecherche || '').toLowerCase().includes(q),
       );
     }
-    if (filterStatus !== 'Tous')  list = list.filter((c) => c.status === filterStatus);
-    if (filterMall   !== 'Tous')  list = list.filter((c) => c.mall === filterMall);
-    if (filterCity   !== 'Toutes') list = list.filter((c) => c.ville === filterCity);
-    if (filterLang   !== 'Toutes') list = list.filter((c) => c.langues?.includes(filterLang));
-    if (filterExp    !== 'Toutes') list = list.filter((c) => c.experience === filterExp);
-    if (filterAge    !== 'Tous')  list = list.filter((c) => ageRange(c.dateNaissance) === filterAge);
+    if (filterStatus   !== 'Tous')   list = list.filter((c) => c.status === filterStatus);
+    if (filterMagasin  !== 'Tous')   list = list.filter((c) => (c.magasinSouhaite || c.magasinPrefere) === filterMagasin);
+    if (filterCity     !== 'Toutes') list = list.filter((c) => c.ville === filterCity);
+    if (filterLang     !== 'Toutes') list = list.filter((c) => c.langues?.includes(filterLang));
+    if (filterExp      !== 'Toutes') list = list.filter((c) => (c.annéesExperience || c.experience) === filterExp);
+    if (filterDispo    !== 'Toutes') list = list.filter((c) => c.disponibilite === filterDispo);
+    if (filterEtudes   !== 'Tous')   list = list.filter((c) => c.niveauEtudes === filterEtudes);
+    if (filterExpRetail !== 'Tous')  list = list.filter((c) => {
+      const val = c.experienceRetail;
+      return filterExpRetail === 'Oui' ? val === 'oui' : val === 'non' || !val;
+    });
 
     const dir = sortDir === 'asc' ? 1 : -1;
     list = [...list].sort((a, b) => {
-      if (sortKey === 'score')      return dir * ((a.score ?? 0) - (b.score ?? 0));
-      if (sortKey === 'nom')        return dir * (a.nom || '').localeCompare(b.nom || '');
+      if (sortKey === 'score')       return dir * ((a.score ?? 0) - (b.score ?? 0));
+      if (sortKey === 'nom')         return dir * (a.nom || '').localeCompare(b.nom || '');
       if (sortKey === 'submittedAt') return dir * (new Date(a.submittedAt) - new Date(b.submittedAt));
       return 0;
     });
 
     return list;
-  }, [candidatures, search, sortKey, sortDir, filterStatus, filterMall, filterCity, filterLang, filterExp, filterAge]);
+  }, [candidatures, search, sortKey, sortDir, filterStatus, filterMagasin, filterCity, filterLang, filterExp, filterDispo, filterEtudes, filterExpRetail]);
 
   function toggleSort(key) {
     if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     else { setSortKey(key); setSortDir('desc'); }
   }
 
+  function resetFilters() {
+    setFilterStatus('Tous'); setFilterMagasin('Tous'); setFilterCity('Toutes');
+    setFilterLang('Toutes'); setFilterExp('Toutes'); setFilterDispo('Toutes');
+    setFilterEtudes('Tous'); setFilterExpRetail('Tous');
+  }
+
   const activeFilterCount = [
-    filterStatus !== 'Tous',
-    filterMall   !== 'Tous',
-    filterCity   !== 'Toutes',
-    filterLang   !== 'Toutes',
-    filterExp    !== 'Toutes',
-    filterAge    !== 'Tous',
+    filterStatus   !== 'Tous',
+    filterMagasin  !== 'Tous',
+    filterCity     !== 'Toutes',
+    filterLang     !== 'Toutes',
+    filterExp      !== 'Toutes',
+    filterDispo    !== 'Toutes',
+    filterEtudes   !== 'Tous',
+    filterExpRetail !== 'Tous',
   ].filter(Boolean).length;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <p className="text-[0.6rem] uppercase tracking-[0.2em] text-[#C9A96E] font-medium mb-1">Candidatures</p>
         <h1 className="text-2xl font-light text-[#1C1C1C]" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
@@ -103,7 +104,7 @@ export default function CandidaturesList() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C9A96E]" />
           <input
             type="search"
-            placeholder="Rechercher par nom, e-mail, magasin…"
+            placeholder="Rechercher par nom, e-mail, magasin, poste…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-white border border-[#E5DDD0] pl-9 pr-4 py-2.5 text-sm text-[#1C1C1C] font-light focus:outline-none focus:border-[#C9A96E] transition-colors"
@@ -129,20 +130,19 @@ export default function CandidaturesList() {
 
       {/* Filter panel */}
       {filtersOpen && (
-        <div className="bg-white border border-[#E5DDD0] p-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <FilterSelect label="Statut"      value={filterStatus} onChange={setFilterStatus} options={STATUSES} />
-          <FilterSelect label="Mall"        value={filterMall}   onChange={setFilterMall}   options={malls} />
-          <FilterSelect label="Ville"       value={filterCity}   onChange={setFilterCity}   options={cities} />
-          <FilterSelect label="Langue"      value={filterLang}   onChange={setFilterLang}   options={langs} />
-          <FilterSelect label="Expérience"  value={filterExp}    onChange={setFilterExp}    options={EXPERIENCES} />
-          <FilterSelect label="Âge"         value={filterAge}    onChange={setFilterAge}    options={AGE_RANGES} />
+        <div className="bg-white border border-[#E5DDD0] p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <FilterSelect label="Statut"          value={filterStatus}    onChange={setFilterStatus}    options={STATUSES} />
+          <FilterSelect label="Magasin"         value={filterMagasin}   onChange={setFilterMagasin}   options={magasins} />
+          <FilterSelect label="Ville"           value={filterCity}      onChange={setFilterCity}       options={cities} />
+          <FilterSelect label="Langue"          value={filterLang}      onChange={setFilterLang}       options={langs} />
+          <FilterSelect label="Expérience retail" value={filterExpRetail} onChange={setFilterExpRetail} options={EXP_RETAIL} />
+          <FilterSelect label="Années d'exp."  value={filterExp}       onChange={setFilterExp}        options={EXPERIENCES} />
+          <FilterSelect label="Disponibilité"  value={filterDispo}     onChange={setFilterDispo}      options={DISPONIBILITES} />
+          <FilterSelect label="Niveau d'études" value={filterEtudes}   onChange={setFilterEtudes}     options={NIVEAUX_ETUDES} />
           {activeFilterCount > 0 && (
             <button
-              onClick={() => {
-                setFilterStatus('Tous'); setFilterMall('Tous'); setFilterCity('Toutes');
-                setFilterLang('Toutes'); setFilterExp('Toutes'); setFilterAge('Tous');
-              }}
-              className="col-span-2 sm:col-span-3 flex items-center gap-1.5 text-xs text-[#6B6560] hover:text-[#C9A96E] font-medium transition-colors"
+              onClick={resetFilters}
+              className="col-span-2 sm:col-span-4 flex items-center gap-1.5 text-xs text-[#6B6560] hover:text-[#C9A96E] font-medium transition-colors"
             >
               <X size={12} /> Réinitialiser les filtres
             </button>
@@ -152,20 +152,21 @@ export default function CandidaturesList() {
 
       {/* Table */}
       <div className="bg-white border border-[#E5DDD0] overflow-hidden">
-        {/* Table header */}
         <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-[#E5DDD0] bg-[#FAF8F5] text-[0.6rem] uppercase tracking-[0.1em] text-[#6B6560] font-medium">
-          <SortHeader label="Candidat" k="nom" current={sortKey} dir={sortDir} onSort={toggleSort} />
-          <span>Magasin · Ville</span>
-          <span>Langues · Exp.</span>
-          <SortHeader label="Score" k="score" current={sortKey} dir={sortDir} onSort={toggleSort} />
+          <SortHeader label="Candidat"   k="nom"         current={sortKey} dir={sortDir} onSort={toggleSort} />
+          <span>Magasin · Poste</span>
+          <span>Langues · Dispo</span>
+          <SortHeader label="Score"      k="score"       current={sortKey} dir={sortDir} onSort={toggleSort} />
           <span>Statut</span>
-          <SortHeader label="Date" k="submittedAt" current={sortKey} dir={sortDir} onSort={toggleSort} />
+          <SortHeader label="Date"       k="submittedAt" current={sortKey} dir={sortDir} onSort={toggleSort} />
         </div>
 
         {filtered.length === 0 ? (
           <div className="py-16 text-center text-sm text-[#6B6560] font-light">Aucun résultat pour ces filtres.</div>
         ) : (
-          filtered.map((c) => <CandidatureRow key={c.id} c={c} onClick={() => navigate(`/backoffice/candidatures/${c.id}`)} />)
+          filtered.map((c) => (
+            <CandidatureRow key={c.id} c={c} onClick={() => navigate(`/backoffice/candidatures/${c.id}`)} />
+          ))
         )}
       </div>
     </div>
@@ -187,42 +188,46 @@ function CandidatureRow({ c, onClick }) {
     'Retenu':      'bg-emerald-50 text-emerald-700',
     'Archivé':     'bg-gray-50 text-gray-500',
   };
-  const date = c.submittedAt ? new Date(c.submittedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '—';
+  const date = c.submittedAt
+    ? new Date(c.submittedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+    : '—';
+  const magasin = c.magasinSouhaite || c.magasinPrefere || '—';
+  const exp     = c.annéesExperience || c.experience || '—';
 
   return (
     <button
       onClick={onClick}
       className="w-full text-left px-5 py-4 border-b border-[#E5DDD0] last:border-0 hover:bg-[#FBF7F1] transition-colors group"
     >
-      {/* Mobile layout */}
+      {/* Mobile */}
       <div className="md:hidden flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-[#1C1C1C] truncate">{c.prenom} {c.nom}</p>
-          <p className="text-xs text-[#6B6560] font-light truncate">{c.magasinSouhaite || c.magasinPrefere || '—'} · {c.ville || '—'}</p>
+          <p className="text-xs text-[#6B6560] font-light truncate">{magasin} · {c.posteRecherche || '—'}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className={`px-2 py-0.5 rounded text-[0.6rem] font-medium ${scoreColors[color]}`}>
+          <span className={`px-2 py-0.5 rounded text-[0.6rem] font-semibold ${scoreColors[color]}`}>
             {c.score ?? '—'}
           </span>
           <ChevronRight size={14} className="text-[#C9A96E] group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
 
-      {/* Desktop layout */}
+      {/* Desktop */}
       <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_auto_auto_auto] gap-4 items-center">
         <div className="min-w-0">
           <p className="text-sm font-medium text-[#1C1C1C] truncate">{c.prenom} {c.nom}</p>
           <p className="text-xs text-[#6B6560]/70 font-light truncate">{c.email}</p>
         </div>
         <div className="min-w-0">
-          <p className="text-xs text-[#1C1C1C] truncate">{c.magasinSouhaite || c.magasinPrefere || '—'}</p>
-          <p className="text-xs text-[#6B6560] font-light">{c.ville || '—'}</p>
+          <p className="text-xs text-[#1C1C1C] truncate">{magasin}</p>
+          <p className="text-xs text-[#6B6560] font-light truncate">{c.posteRecherche || '—'}</p>
         </div>
         <div className="min-w-0">
-          <p className="text-xs text-[#1C1C1C]">{(c.langues || []).join(', ') || '—'}</p>
-          <p className="text-xs text-[#6B6560] font-light truncate">{c.annéesExperience || c.experience || '—'}</p>
+          <p className="text-xs text-[#1C1C1C] truncate">{(c.langues || []).join(', ') || '—'}</p>
+          <p className="text-xs text-[#6B6560] font-light">{c.disponibilite || exp}</p>
         </div>
-        <div className="w-16 text-center">
+        <div className="w-20 text-center">
           <span className={`inline-block px-2 py-0.5 rounded text-[0.6rem] font-semibold ${scoreColors[color]}`}>
             {c.score ?? '—'} · {label}
           </span>
