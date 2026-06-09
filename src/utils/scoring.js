@@ -1,14 +1,21 @@
 const EXP_SCORES = {
-  'Aucune expérience': 0,
-  "Moins d'1 an":      5,
-  '1 à 2 ans':        15,
-  '3 à 5 ans':        25,
-  'Plus de 5 ans':    35,
+  "Moins d'1 an": 5,
+  '1 à 2 ans':   15,
+  '3 à 5 ans':   25,
+  'Plus de 5 ans': 35,
+};
+
+const ETUDES_SCORES = {
+  'Baccalauréat':   1,
+  'Bac+2':          2,
+  'Bac+3':          3,
+  'Bac+5 et plus':  5,
+  'Autre':          1,
 };
 
 const MAX_RAW = 95; // 20+15+5+35+15+5
 
-export function scoreCandidature({ langues = [], experience = '', cv = null, message = '' }) {
+export function scoreCandidature({ langues = [], experience = '', cv = null, niveauEtudes = '' }) {
   const breakdown = [];
   let raw = 0;
 
@@ -30,9 +37,9 @@ export function scoreCandidature({ langues = [], experience = '', cv = null, mes
   raw += cvPts;
   breakdown.push({ criterion: 'CV joint', points: cvPts, max: 15 });
 
-  const msgPts = message?.trim() ? 5 : 0;
-  raw += msgPts;
-  breakdown.push({ criterion: 'Message', points: msgPts, max: 5 });
+  const etudesPts = ETUDES_SCORES[niveauEtudes] ?? 0;
+  raw += etudesPts;
+  breakdown.push({ criterion: 'Formation', points: etudesPts, max: 5 });
 
   const score = Math.round((raw / MAX_RAW) * 100);
   return { score, scoreBreakdown: breakdown };

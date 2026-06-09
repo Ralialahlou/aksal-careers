@@ -52,7 +52,7 @@ export default function CandidaturesList() {
         (c) =>
           (c.nom + ' ' + c.prenom).toLowerCase().includes(q) ||
           c.email?.toLowerCase().includes(q) ||
-          c.magasinPrefere?.toLowerCase().includes(q),
+          (c.magasinSouhaite || c.magasinPrefere || '').toLowerCase().includes(q),
       );
     }
     if (filterStatus !== 'Tous')  list = list.filter((c) => c.status === filterStatus);
@@ -198,7 +198,7 @@ function CandidatureRow({ c, onClick }) {
       <div className="md:hidden flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-[#1C1C1C] truncate">{c.prenom} {c.nom}</p>
-          <p className="text-xs text-[#6B6560] font-light truncate">{c.magasinPrefere || '—'} · {c.ville || '—'}</p>
+          <p className="text-xs text-[#6B6560] font-light truncate">{c.magasinSouhaite || c.magasinPrefere || '—'} · {c.ville || '—'}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className={`px-2 py-0.5 rounded text-[0.6rem] font-medium ${scoreColors[color]}`}>
@@ -215,12 +215,12 @@ function CandidatureRow({ c, onClick }) {
           <p className="text-xs text-[#6B6560]/70 font-light truncate">{c.email}</p>
         </div>
         <div className="min-w-0">
-          <p className="text-xs text-[#1C1C1C] truncate">{c.magasinPrefere || '—'}</p>
+          <p className="text-xs text-[#1C1C1C] truncate">{c.magasinSouhaite || c.magasinPrefere || '—'}</p>
           <p className="text-xs text-[#6B6560] font-light">{c.ville || '—'}</p>
         </div>
         <div className="min-w-0">
           <p className="text-xs text-[#1C1C1C]">{(c.langues || []).join(', ') || '—'}</p>
-          <p className="text-xs text-[#6B6560] font-light truncate">{c.experience || '—'}</p>
+          <p className="text-xs text-[#6B6560] font-light truncate">{c.annéesExperience || c.experience || '—'}</p>
         </div>
         <div className="w-16 text-center">
           <span className={`inline-block px-2 py-0.5 rounded text-[0.6rem] font-semibold ${scoreColors[color]}`}>

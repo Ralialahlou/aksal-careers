@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Download, Phone, Mail, MapPin, Calendar, Briefcase, Building2, Languages } from 'lucide-react';
+import { ArrowLeft, FileText, Download, Phone, Mail, MapPin, Briefcase, Building2, Languages, GraduationCap, Clock, CheckCircle2 } from 'lucide-react';
 import { useCandidatures } from '../hooks/useCandidatures.js';
 import { scoreLabel } from '../utils/scoring.js';
 import { updateCandidatureStatus } from '../utils/storage.js';
@@ -71,7 +71,7 @@ export default function CandidatureProfile() {
               {c.score ?? '—'} · {scoreTag}
             </span>
           </div>
-          <p className="text-xs text-[#6B6560] font-light">{c.magasinPrefere || '—'} · {c.mall || '—'}</p>
+          <p className="text-xs text-[#6B6560] font-light">{c.magasinSouhaite || c.magasinPrefere || '—'}{c.posteRecherche ? ` · ${c.posteRecherche}` : ''}</p>
           {c.submittedAt && (
             <p className="text-[0.6rem] text-[#6B6560]/50 mt-1 uppercase tracking-wider">
               Soumis le {new Date(c.submittedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
@@ -89,19 +89,30 @@ export default function CandidatureProfile() {
       {/* Info grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <InfoCard title="Coordonnées">
-          <InfoRow icon={<Mail size={13} />}     label="E-mail"    value={c.email} />
-          <InfoRow icon={<Phone size={13} />}    label="Téléphone" value={c.telephone} />
-          <InfoRow icon={<MapPin size={13} />}   label="Ville"     value={c.ville} />
-          <InfoRow icon={<Calendar size={13} />} label="Naissance" value={c.dateNaissance
-            ? new Date(c.dateNaissance).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-            : '—'} />
+          <InfoRow icon={<Mail size={13} />}   label="E-mail"    value={c.email} />
+          <InfoRow icon={<Phone size={13} />}  label="Téléphone" value={c.telephone} />
+          <InfoRow icon={<MapPin size={13} />} label="Ville"     value={c.ville} />
+          {c.adresse && <InfoRow icon={<MapPin size={13} />} label="Adresse" value={c.adresse} />}
         </InfoCard>
 
-        <InfoCard title="Profil professionnel">
-          <InfoRow icon={<Languages size={13} />}  label="Langues"     value={(c.langues || []).join(', ') || '—'} />
-          <InfoRow icon={<Briefcase size={13} />}  label="Expérience"  value={c.experience || '—'} />
-          <InfoRow icon={<Building2 size={13} />}  label="Mall"        value={c.mall || '—'} />
-          <InfoRow icon={<Building2 size={13} />}  label="Magasin"     value={c.magasinPrefere || '—'} />
+        <InfoCard title="Candidature">
+          <InfoRow icon={<Building2 size={13} />} label="Magasin"  value={c.magasinSouhaite || c.magasinPrefere || '—'} />
+          <InfoRow icon={<Briefcase size={13} />} label="Poste"    value={c.posteRecherche || '—'} />
+          <InfoRow icon={<Clock size={13} />}     label="Disponibilité" value={c.disponibilite || '—'} />
+        </InfoCard>
+
+        <InfoCard title="Expérience professionnelle">
+          <InfoRow icon={<CheckCircle2 size={13} />} label="Exp. retail"     value={c.experienceRetail === 'oui' ? 'Oui' : c.experienceRetail === 'non' ? 'Non — 1ère exp.' : '—'} />
+          <InfoRow icon={<Briefcase size={13} />}    label="Années d'exp."   value={c.annéesExperience || c.experience || '—'} />
+          {c.dernierPoste     && <InfoRow icon={<Briefcase size={13} />} label="Dernier poste"    value={c.dernierPoste} />}
+          {c.dernierEmployeur && <InfoRow icon={<Building2 size={13} />} label="Dernier employeur" value={c.dernierEmployeur} />}
+          {c.secteurActivite  && <InfoRow icon={<Building2 size={13} />} label="Secteur"          value={c.secteurActivite} />}
+        </InfoCard>
+
+        <InfoCard title="Formation & Langues">
+          <InfoRow icon={<GraduationCap size={13} />} label="Niveau d'études" value={c.niveauEtudes || '—'} />
+          {c.diplomePrincipal && <InfoRow icon={<GraduationCap size={13} />} label="Diplôme" value={c.diplomePrincipal} />}
+          <InfoRow icon={<Languages size={13} />} label="Langues" value={(c.langues || []).join(', ') || '—'} />
         </InfoCard>
       </div>
 
