@@ -1,4 +1,4 @@
-const KEY = 'aksal_candidatures_v2';
+const KEY = 'aksal_candidatures_v3';
 
 export function getCandidatures() {
   try {

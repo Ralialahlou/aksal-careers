@@ -16,8 +16,11 @@ export default function DashboardPage() {
     const byExp       = {};
     const byStatus    = {};
     const byScore     = { 'Excellent': 0, 'Bon': 0, 'Moyen': 0, 'Faible': 0 };
+    const byLang      = { 'Français': 0, 'Anglais': 0, 'Arabe': 0, 'Espagnol': 0, 'Autre': 0 };
     let withRetailExp = 0;
     let disponibleNow = 0;
+
+    const LANG_MAP = { francais: 'Français', anglais: 'Anglais', arabe: 'Arabe', espagnol: 'Espagnol', autre: 'Autre' };
 
     candidatures.forEach((c) => {
       const magasin = c.magasinSouhaite || c.magasinPrefere || 'Non précisé';
@@ -45,9 +48,14 @@ export default function DashboardPage() {
       byScore[label]++;
 
       if (c.experienceRetail === 'oui') withRetailExp++;
+
+      (c.langues || []).forEach((l) => {
+        const key = LANG_MAP[l] || 'Autre';
+        byLang[key] = (byLang[key] || 0) + 1;
+      });
     });
 
-    return { byMagasin, byCity, byPoste, byDispo, byEtudes, byExp, byStatus, byScore, withRetailExp, disponibleNow };
+    return { byMagasin, byCity, byPoste, byDispo, byEtudes, byExp, byStatus, byScore, byLang, withRetailExp, disponibleNow };
   }, [candidatures]);
 
   return (
@@ -105,14 +113,25 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Charts row 3 — expérience + formation */}
+      {/* Charts row 3 — langues + expérience */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ChartCard
+          title="Langues maîtrisées"
+          data={stats.byLang}
+          total={total}
+          ordered={['Français', 'Anglais', 'Arabe', 'Espagnol', 'Autre']}
+          colors={{ 'Français': '#C9A96E', 'Anglais': '#3b82f6', 'Arabe': '#10b981', 'Espagnol': '#f59e0b', 'Autre': '#6B6560' }}
+        />
         <ChartCard
           title="Années d'expérience"
           data={stats.byExp}
           total={total}
           ordered={["Moins d'1 an", '1 à 2 ans', '3 à 5 ans', 'Plus de 5 ans', 'Non précisé']}
         />
+      </div>
+
+      {/* Charts row 4 — formation */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ChartCard
           title="Niveau d'études"
           data={stats.byEtudes}
