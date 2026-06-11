@@ -4,33 +4,43 @@ import { Search, ChevronUp, ChevronDown, ChevronRight, SlidersHorizontal, X } fr
 import { useCandidatures } from '../hooks/useCandidatures.js';
 import { scoreLabel } from '../utils/scoring.js';
 
-const STATUSES      = ['Tous', 'À contacter', 'En cours', 'Retenu', 'Archivé'];
-const EXPERIENCES   = ['Toutes', "Moins d'1 an", '1 à 2 ans', '3 à 5 ans', 'Plus de 5 ans'];
+const STATUSES       = ['Tous', 'À contacter', 'En cours', 'Retenu', 'Archivé'];
+const EXPERIENCES    = ['Toutes', "Moins d'1 an", '1 à 2 ans', '3 à 5 ans', 'Plus de 5 ans'];
 const DISPONIBILITES = ['Toutes', 'Immédiate', 'Sous 15 jours', 'Sous 1 mois', "Plus d'1 mois"];
 const NIVEAUX_ETUDES = ['Tous', 'Baccalauréat', 'Bac+2', 'Bac+3', 'Bac+5 et plus', 'Autre'];
-const EXP_RETAIL    = ['Tous', 'Oui', 'Non'];
+const EXP_RETAIL     = ['Tous', 'Oui', 'Non'];
 
 export default function CandidaturesList() {
   const { candidatures } = useCandidatures();
   const navigate = useNavigate();
 
-  const [search, setSearch]         = useState('');
-  const [sortKey, setSortKey]       = useState('submittedAt');
-  const [sortDir, setSortDir]       = useState('desc');
+  const [search, setSearch]           = useState('');
+  const [sortKey, setSortKey]         = useState('submittedAt');
+  const [sortDir, setSortDir]         = useState('desc');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const [filterStatus,   setFilterStatus]   = useState('Tous');
-  const [filterMagasin,  setFilterMagasin]  = useState('Tous');
-  const [filterCity,     setFilterCity]     = useState('Toutes');
-  const [filterLang,     setFilterLang]     = useState('Toutes');
-  const [filterExp,      setFilterExp]      = useState('Toutes');
-  const [filterDispo,    setFilterDispo]    = useState('Toutes');
-  const [filterEtudes,   setFilterEtudes]   = useState('Tous');
-  const [filterExpRetail,setFilterExpRetail]= useState('Tous');
+  const [filterStatus,    setFilterStatus]    = useState('Tous');
+  const [filterMagasin,   setFilterMagasin]   = useState('Tous');
+  const [filterCity,      setFilterCity]      = useState('Toutes');
+  const [filterLang,      setFilterLang]      = useState('Toutes');
+  const [filterExp,       setFilterExp]       = useState('Toutes');
+  const [filterDispo,     setFilterDispo]     = useState('Toutes');
+  const [filterEtudes,    setFilterEtudes]    = useState('Tous');
+  const [filterExpRetail, setFilterExpRetail] = useState('Tous');
 
-  const magasins = useMemo(() => ['Tous', ...new Set(candidatures.map((c) => c.magasinSouhaite || c.magasinPrefere).filter(Boolean))], [candidatures]);
-  const cities   = useMemo(() => ['Toutes', ...new Set(candidatures.map((c) => c.ville).filter(Boolean))], [candidatures]);
-  const langs    = useMemo(() => ['Toutes', ...new Set(candidatures.flatMap((c) => c.langues || []))], [candidatures]);
+  const magasins = useMemo(() => [
+    'Tous',
+    ...new Set(
+      candidatures.flatMap((c) =>
+        c.magasinsSouhaites?.length
+          ? c.magasinsSouhaites
+          : [c.magasinSouhaite || c.magasinPrefere].filter(Boolean),
+      ),
+    ),
+  ], [candidatures]);
+
+  const cities = useMemo(() => ['Toutes', ...new Set(candidatures.map((c) => c.ville).filter(Boolean))], [candidatures]);
+  const langs  = useMemo(() => ['Toutes', ...new Set(candidatures.flatMap((c) => c.langues || []))], [candidatures]);
 
   const filtered = useMemo(() => {
     let list = candidatures;
@@ -40,12 +50,20 @@ export default function CandidaturesList() {
       list = list.filter((c) =>
         (c.nom + ' ' + c.prenom).toLowerCase().includes(q) ||
         c.email?.toLowerCase().includes(q) ||
-        (c.magasinSouhaite || c.magasinPrefere || '').toLowerCase().includes(q) ||
-        (c.posteRecherche || '').toLowerCase().includes(q),
+        (c.magasinsSouhaites?.join(' ') || c.magasinSouhaite || c.magasinPrefere || '').toLowerCase().includes(q) ||
+        (c.postesRecherches?.join(' ') || c.posteRecherche || '').toLowerCase().includes(q),
       );
     }
-    if (filterStatus   !== 'Tous')   list = list.filter((c) => c.status === filterStatus);
-    if (filterMagasin  !== 'Tous')   list = list.filter((c) => (c.magasinSouhaite || c.magasinPrefere) === filterMagasin);
+
+    if (filterStatus !== 'Tous') list = list.filter((c) => c.status === filterStatus);
+
+    if (filterMagasin !== 'Tous') {
+      list = list.filter((c) =>
+        c.magasinsSouhaites?.includes(filterMagasin) ||
+        (c.magasinSouhaite || c.magasinPrefere) === filterMagasin,
+      );
+    }
+
     if (filterCity     !== 'Toutes') list = list.filter((c) => c.ville === filterCity);
     if (filterLang     !== 'Toutes') list = list.filter((c) => c.langues?.includes(filterLang));
     if (filterExp      !== 'Toutes') list = list.filter((c) => (c.annéesExperience || c.experience) === filterExp);
@@ -131,14 +149,14 @@ export default function CandidaturesList() {
       {/* Filter panel */}
       {filtersOpen && (
         <div className="bg-white border border-[#E5DDD0] p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <FilterSelect label="Statut"          value={filterStatus}    onChange={setFilterStatus}    options={STATUSES} />
-          <FilterSelect label="Magasin"         value={filterMagasin}   onChange={setFilterMagasin}   options={magasins} />
-          <FilterSelect label="Ville"           value={filterCity}      onChange={setFilterCity}       options={cities} />
-          <FilterSelect label="Langue"          value={filterLang}      onChange={setFilterLang}       options={langs} />
+          <FilterSelect label="Statut"           value={filterStatus}    onChange={setFilterStatus}    options={STATUSES} />
+          <FilterSelect label="Magasin"          value={filterMagasin}   onChange={setFilterMagasin}   options={magasins} />
+          <FilterSelect label="Ville"            value={filterCity}      onChange={setFilterCity}       options={cities} />
+          <FilterSelect label="Langue"           value={filterLang}      onChange={setFilterLang}       options={langs} />
           <FilterSelect label="Expérience retail" value={filterExpRetail} onChange={setFilterExpRetail} options={EXP_RETAIL} />
-          <FilterSelect label="Années d'exp."  value={filterExp}       onChange={setFilterExp}        options={EXPERIENCES} />
-          <FilterSelect label="Disponibilité"  value={filterDispo}     onChange={setFilterDispo}      options={DISPONIBILITES} />
-          <FilterSelect label="Niveau d'études" value={filterEtudes}   onChange={setFilterEtudes}     options={NIVEAUX_ETUDES} />
+          <FilterSelect label="Années d'exp."   value={filterExp}       onChange={setFilterExp}        options={EXPERIENCES} />
+          <FilterSelect label="Disponibilité"   value={filterDispo}     onChange={setFilterDispo}      options={DISPONIBILITES} />
+          <FilterSelect label="Niveau d'études" value={filterEtudes}    onChange={setFilterEtudes}     options={NIVEAUX_ETUDES} />
           {activeFilterCount > 0 && (
             <button
               onClick={resetFilters}
@@ -188,10 +206,9 @@ function CandidatureRow({ c, onClick }) {
     'Retenu':      'bg-emerald-50 text-emerald-700',
     'Archivé':     'bg-gray-50 text-gray-500',
   };
-  const date = c.submittedAt
-    ? new Date(c.submittedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
-    : '—';
-  const magasin = c.magasinSouhaite || c.magasinPrefere || '—';
+  const date    = c.submittedAt ? new Date(c.submittedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '—';
+  const magasin = c.magasinsSouhaites?.length ? c.magasinsSouhaites.join(', ') : (c.magasinSouhaite || c.magasinPrefere || '—');
+  const poste   = c.postesRecherches?.length  ? c.postesRecherches.join(', ')  : (c.posteRecherche || '—');
   const exp     = c.annéesExperience || c.experience || '—';
 
   return (
@@ -203,7 +220,7 @@ function CandidatureRow({ c, onClick }) {
       <div className="md:hidden flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-[#1C1C1C] truncate">{c.prenom} {c.nom}</p>
-          <p className="text-xs text-[#6B6560] font-light truncate">{magasin} · {c.posteRecherche || '—'}</p>
+          <p className="text-xs text-[#6B6560] font-light truncate">{magasin} · {poste}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className={`px-2 py-0.5 rounded text-[0.6rem] font-semibold ${scoreColors[color]}`}>
@@ -221,7 +238,7 @@ function CandidatureRow({ c, onClick }) {
         </div>
         <div className="min-w-0">
           <p className="text-xs text-[#1C1C1C] truncate">{magasin}</p>
-          <p className="text-xs text-[#6B6560] font-light truncate">{c.posteRecherche || '—'}</p>
+          <p className="text-xs text-[#6B6560] font-light truncate">{poste}</p>
         </div>
         <div className="min-w-0">
           <p className="text-xs text-[#1C1C1C] truncate">{(c.langues || []).join(', ') || '—'}</p>

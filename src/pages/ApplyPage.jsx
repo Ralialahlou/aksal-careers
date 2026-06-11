@@ -5,15 +5,19 @@ import { useAppData } from '../hooks/useData';
 import { addCandidature } from '../utils/storage.js';
 import { scoreCandidature } from '../utils/scoring.js';
 
+const FLUENCY_LABELS = { 1: 'Notions', 2: 'Intermédiaire', 3: 'Courant' };
+
 const initialForm = {
   nom: '', prenom: '',
-  telephone: '', email: '', ville: '', adresse: '',
-  magasinSouhaite: '', posteRecherche: '', posteAutre: '', villesSouhaitees: [],
+  telephone: '', email: '', ville: '', villeAutre: '', adresse: '',
+  magasinsSouhaites: [],
+  postesRecherches: [], posteAutre: '',
+  villesSouhaitees: [],
   disponibilite: '',
   experienceRetail: '',
   annéesExperience: '', dernierPoste: '', dernierEmployeur: '', secteurActivite: '',
   niveauEtudes: '', niveauEtudesAutre: '', diplomePrincipal: '',
-  langues: [],
+  langues: [], languesFluency: {},
   cv: null,
   consentRgpd: false,
   consentCertif: false,
@@ -22,11 +26,17 @@ const initialForm = {
 export default function ApplyPage() {
   const { config, content, loading, error } = useAppData();
   const [params] = useSearchParams();
-  const [form, setForm] = useState({
-    ...initialForm,
-    magasinSouhaite: params.get('enseigne') || '',
-    posteRecherche:  params.get('poste')    || '',
+
+  const [form, setForm] = useState(() => {
+    const enseigne = params.get('enseigne');
+    const poste    = params.get('poste');
+    return {
+      ...initialForm,
+      magasinsSouhaites: enseigne ? [enseigne] : [],
+      postesRecherches:  poste    ? [poste]    : [],
+    };
   });
+
   const [errors, setErrors]       = useState({});
   const [submitted, setSubmitted]  = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -37,16 +47,50 @@ export default function ApplyPage() {
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
   }
 
-  function toggleLangue(id) {
-    set('langues', form.langues.includes(id)
-      ? form.langues.filter((l) => l !== id)
-      : [...form.langues, id]);
+  function toggleMagasin(m) {
+    setForm((f) => ({
+      ...f,
+      magasinsSouhaites: f.magasinsSouhaites.includes(m)
+        ? f.magasinsSouhaites.filter((x) => x !== m)
+        : [...f.magasinsSouhaites, m],
+    }));
+    if (errors.magasinsSouhaites) setErrors((e) => ({ ...e, magasinsSouhaites: undefined }));
+  }
+
+  function togglePoste(p) {
+    setForm((f) => ({
+      ...f,
+      postesRecherches: f.postesRecherches.includes(p)
+        ? f.postesRecherches.filter((x) => x !== p)
+        : [...f.postesRecherches, p],
+    }));
+    if (errors.postesRecherches) setErrors((e) => ({ ...e, postesRecherches: undefined }));
   }
 
   function toggleVille(v) {
-    set('villesSouhaitees', form.villesSouhaitees.includes(v)
-      ? form.villesSouhaitees.filter((x) => x !== v)
-      : [...form.villesSouhaitees, v]);
+    setForm((f) => ({
+      ...f,
+      villesSouhaitees: f.villesSouhaitees.includes(v)
+        ? f.villesSouhaitees.filter((x) => x !== v)
+        : [...f.villesSouhaitees, v],
+    }));
+  }
+
+  function toggleLangue(id) {
+    setForm((f) => {
+      const isSelected = f.langues.includes(id);
+      const { [id]: _removed, ...restFluency } = f.languesFluency;
+      return {
+        ...f,
+        langues: isSelected ? f.langues.filter((l) => l !== id) : [...f.langues, id],
+        languesFluency: isSelected ? restFluency : f.languesFluency,
+      };
+    });
+    if (errors.langues) setErrors((e) => ({ ...e, langues: undefined }));
+  }
+
+  function setLangFluency(id, level) {
+    setForm((f) => ({ ...f, languesFluency: { ...f.languesFluency, [id]: level } }));
   }
 
   function handleFile(e) {
@@ -74,16 +118,17 @@ export default function ApplyPage() {
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Adresse invalide.';
     if (!form.telephone.trim() || !/^[0-9+\s\-()]{8,15}$/.test(form.telephone)) e.telephone = 'Numéro invalide.';
     if (!form.ville)            e.ville     = 'Requis.';
-    if (!form.magasinSouhaite)  e.magasinSouhaite = 'Requis.';
-    if (!form.posteRecherche)   e.posteRecherche  = 'Requis.';
-    if (form.posteRecherche === 'Autre' && !form.posteAutre.trim()) e.posteAutre = 'Précisez le poste.';
-    if (!form.disponibilite)    e.disponibilite   = 'Requis.';
+    if (form.ville === 'Autre' && !form.villeAutre.trim()) e.villeAutre = 'Précisez votre ville.';
+    if (form.magasinsSouhaites.length === 0) e.magasinsSouhaites = 'Sélectionnez au moins un magasin.';
+    if (form.postesRecherches.length === 0)  e.postesRecherches  = 'Sélectionnez au moins un poste.';
+    if (form.postesRecherches.includes('Autre') && !form.posteAutre.trim()) e.posteAutre = 'Précisez le poste.';
+    if (!form.disponibilite)    e.disponibilite    = 'Requis.';
     if (!form.experienceRetail) e.experienceRetail = 'Requis.';
     if (form.experienceRetail === 'oui' && !form.annéesExperience) e.annéesExperience = 'Requis.';
-    if (!form.niveauEtudes)     e.niveauEtudes    = 'Requis.';
+    if (!form.niveauEtudes)     e.niveauEtudes     = 'Requis.';
     if (form.niveauEtudes === 'Autre' && !form.niveauEtudesAutre.trim()) e.niveauEtudesAutre = 'Précisez.';
     if (form.langues.length === 0) e.langues = 'Sélectionnez au moins une langue.';
-    if (!form.cv)               e.cv        = 'Le CV est requis.';
+    if (!form.cv)               e.cv           = 'Le CV est requis.';
     if (!form.consentRgpd)      e.consentRgpd  = 'Consentement requis.';
     if (!form.consentCertif)    e.consentCertif = 'Certification requise.';
     return e;
@@ -94,8 +139,7 @@ export default function ApplyPage() {
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
-      const firstError = document.querySelector('[data-error]');
-      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     setSubmitting(true);
@@ -114,6 +158,11 @@ export default function ApplyPage() {
         ? { name: form.cv.name, size: form.cv.size, type: form.cv.type, data: dataUrl }
         : null;
 
+      const villeFinale  = form.ville === 'Autre' ? form.villeAutre.trim() : form.ville;
+      const postesFinaux = form.postesRecherches
+        .map((p) => (p === 'Autre' ? form.posteAutre.trim() : p))
+        .filter(Boolean);
+
       const { score, scoreBreakdown } = scoreCandidature({
         langues:          form.langues,
         experienceRetail: form.experienceRetail,
@@ -129,30 +178,33 @@ export default function ApplyPage() {
       });
 
       addCandidature({
-        id:               crypto.randomUUID(),
-        nom:              form.nom,
-        prenom:           form.prenom,
-        email:            form.email,
-        telephone:        form.telephone,
-        ville:            form.ville,
-        adresse:          form.adresse,
-        magasinSouhaite:  form.magasinSouhaite,
-        posteRecherche:   form.posteRecherche === 'Autre' ? form.posteAutre : form.posteRecherche,
-        villesSouhaitees: form.villesSouhaitees,
-        disponibilite:    form.disponibilite,
-        experienceRetail: form.experienceRetail,
-        annéesExperience: form.annéesExperience,
-        dernierPoste:     form.dernierPoste,
-        dernierEmployeur: form.dernierEmployeur,
-        secteurActivite:  form.secteurActivite,
-        niveauEtudes:     form.niveauEtudes === 'Autre' ? form.niveauEtudesAutre : form.niveauEtudes,
-        diplomePrincipal: form.diplomePrincipal,
-        langues:          form.langues,
-        cv:               cvMeta,
+        id:                crypto.randomUUID(),
+        nom:               form.nom,
+        prenom:            form.prenom,
+        email:             form.email,
+        telephone:         form.telephone,
+        ville:             villeFinale,
+        adresse:           form.adresse,
+        magasinsSouhaites: form.magasinsSouhaites,
+        magasinSouhaite:   form.magasinsSouhaites[0] || '',
+        postesRecherches:  postesFinaux,
+        posteRecherche:    postesFinaux[0] || '',
+        villesSouhaitees:  form.villesSouhaitees,
+        disponibilite:     form.disponibilite,
+        experienceRetail:  form.experienceRetail,
+        annéesExperience:  form.annéesExperience,
+        dernierPoste:      form.dernierPoste,
+        dernierEmployeur:  form.dernierEmployeur,
+        secteurActivite:   form.secteurActivite,
+        niveauEtudes:      form.niveauEtudes === 'Autre' ? form.niveauEtudesAutre : form.niveauEtudes,
+        diplomePrincipal:  form.diplomePrincipal,
+        langues:           form.langues,
+        languesFluency:    form.languesFluency,
+        cv:                cvMeta,
         score,
         scoreBreakdown,
-        status:           'À contacter',
-        submittedAt:      new Date().toISOString(),
+        status:            'À contacter',
+        submittedAt:       new Date().toISOString(),
       });
 
       setSubmitting(false);
@@ -169,80 +221,57 @@ export default function ApplyPage() {
   const pl = c.placeholders;
   const s  = c.sections;
 
-  const formStores      = config.formStores      || [];
-  const postes          = config.postes          || [];
-  const villesSouh      = config.villesSouhaitees || [];
-  const disponibilites  = config.disponibilites  || [];
-  const niveauxEtudes   = config.niveauxEtudes   || [];
-  const languages       = config.languages       || [];
-  const experiences     = config.experiences     || [];
-  const formCities      = config.formCities      || [];
+  const formStores     = config.formStores      || [];
+  const postes         = config.postes          || [];
+  const villesSouh     = config.villesSouhaitees || [];
+  const disponibilites = config.disponibilites  || [];
+  const niveauxEtudes  = config.niveauxEtudes   || [];
+  const languages      = config.languages       || [];
+  const experiences    = config.experiences     || [];
+  const formCities     = config.formCities      || [];
 
-  /* ── Success ─────────────────────────────────────── */
+  /* ── Success ──────────────────────────────────────── */
   if (submitted) {
     return (
       <main className="flex-1 flex flex-col min-h-[calc(100dvh-57px)]">
         <div className="h-0.5 w-full bg-gradient-to-r from-[#C9A96E] via-[#EAD8B8] to-[#C9A96E]" />
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
-          <img
-            src={`${import.meta.env.BASE_URL}aksal-logo-gold.png`}
-            alt="Groupe AKSAL"
-            className="h-20 w-auto object-contain mb-10"
-            style={{ filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.08))' }}
-          />
+          <img src={`${import.meta.env.BASE_URL}aksal-logo-gold.png`} alt="Groupe AKSAL" className="h-20 w-auto object-contain mb-10" />
           <div className="w-12 h-px bg-[#C9A96E] mb-8" />
-          <h1
-            className="text-4xl md:text-5xl lg:text-6xl font-light italic text-[#1C1C1C] leading-[1.1] mb-6 max-w-lg"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-          >
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-light italic text-[#1C1C1C] leading-[1.1] mb-6 max-w-lg" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
             {c.success.headline}
           </h1>
-          <p className="text-base text-[#6B6560] font-light leading-relaxed max-w-sm mb-3">
-            Votre candidature a bien été reçue.
-          </p>
-          <p className="text-base text-[#6B6560] font-light leading-relaxed max-w-sm mb-10">
-            Notre équipe vous recontactera dans les plus brefs délais.
-          </p>
+          <p className="text-base text-[#6B6560] font-light leading-relaxed max-w-sm mb-3">Votre candidature a bien été reçue.</p>
+          <p className="text-base text-[#6B6560] font-light leading-relaxed max-w-sm mb-10">Notre équipe vous recontactera dans les plus brefs délais.</p>
           <div className="w-12 h-px bg-[#C9A96E] mb-10" />
           <div className="flex flex-col sm:flex-row gap-3">
-            <a href="/" className="px-8 py-3.5 bg-[#C9A96E] text-white text-xs uppercase tracking-[0.15em] font-medium hover:bg-[#A8813F] transition-colors">
-              {c.success.ctaOffers}
-            </a>
-            <button
-              onClick={() => { setSubmitted(false); setForm(initialForm); }}
-              className="px-8 py-3.5 border border-[#E5DDD0] text-[#6B6560] text-xs uppercase tracking-[0.15em] font-medium hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors"
-            >
-              {c.success.ctaNew}
-            </button>
+            <a href="/" className="px-8 py-3.5 bg-[#C9A96E] text-white text-xs uppercase tracking-[0.15em] font-medium hover:bg-[#A8813F] transition-colors">{c.success.ctaOffers}</a>
+            <button onClick={() => { setSubmitted(false); setForm(initialForm); }} className="px-8 py-3.5 border border-[#E5DDD0] text-[#6B6560] text-xs uppercase tracking-[0.15em] font-medium hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors">{c.success.ctaNew}</button>
           </div>
         </div>
         <div className="border-t border-[#E5DDD0] py-5 text-center">
-          <p className="text-[0.65rem] uppercase tracking-[0.15em] text-[#6B6560]/50 font-light">
-            Groupe AKSAL · Morocco Mall · careers@groupeaksal.ma
-          </p>
+          <p className="text-[0.65rem] uppercase tracking-[0.15em] text-[#6B6560]/50 font-light">Groupe AKSAL · Morocco Mall · careers@groupeaksal.ma</p>
         </div>
       </main>
     );
   }
 
   /* ── Form ─────────────────────────────────────────── */
+  const singlePoste  = form.postesRecherches.length === 1 && !form.postesRecherches.includes('Autre');
   const hasRetailExp = form.experienceRetail === 'oui';
 
   return (
     <main className="flex-1">
+      {/* Hero */}
       <section className="bg-white border-b border-[#E5DDD0] py-14 md:py-20 px-5">
         <div className="max-w-2xl mx-auto">
           <p className="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-[#C9A96E] mb-5">{c.eyebrow}</p>
-          <h1
-            className="text-4xl md:text-5xl font-light italic text-[#1C1C1C] leading-[1.1] mb-4 whitespace-pre-line"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-          >
-            {form.posteRecherche && form.posteRecherche !== 'Autre'
-              ? `Postuler — ${form.posteRecherche}`
-              : c.headlineDefault}
+          <h1 className="text-4xl md:text-5xl font-light italic text-[#1C1C1C] leading-[1.1] mb-3 whitespace-pre-line" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+            {singlePoste ? `Postuler — ${form.postesRecherches[0]}` : c.headlineDefault}
           </h1>
-          {form.magasinSouhaite && (
-            <p className="text-sm text-[#6B6560] font-light">{form.magasinSouhaite}</p>
+          <p className="text-sm text-[#6B6560] font-light leading-relaxed">{c.headlineSubtitle}</p>
+          {form.magasinsSouhaites.length > 0 && (
+            <p className="text-sm text-[#C9A96E] font-light mt-1">{form.magasinsSouhaites.join(' · ')}</p>
           )}
           <div className="w-12 h-px bg-[#C9A96E] mt-5" />
         </div>
@@ -255,10 +284,10 @@ export default function ApplyPage() {
           <FormSection step="01" title={s.identity}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <Field label={fl.nom} error={errors.nom}>
-                <Input type="text" value={form.nom} onChange={(e) => set('nom', e.target.value)} placeholder={pl.nom} hasError={!!errors.nom} />
+                <Input type="text" value={form.nom} onChange={(e) => set('nom', e.target.value)} placeholder="El Alaoui" hasError={!!errors.nom} />
               </Field>
               <Field label={fl.prenom} error={errors.prenom}>
-                <Input type="text" value={form.prenom} onChange={(e) => set('prenom', e.target.value)} placeholder={pl.prenom} hasError={!!errors.prenom} />
+                <Input type="text" value={form.prenom} onChange={(e) => set('prenom', e.target.value)} placeholder="Karim" hasError={!!errors.prenom} />
               </Field>
             </div>
             <Field label={fl.telephone} error={errors.telephone}>
@@ -273,6 +302,11 @@ export default function ApplyPage() {
                 {formCities.map((city) => <option key={city} value={city}>{city}</option>)}
               </SelectField>
             </Field>
+            {form.ville === 'Autre' && (
+              <Field label={fl.villeAutre} error={errors.villeAutre}>
+                <Input type="text" value={form.villeAutre} onChange={(e) => set('villeAutre', e.target.value)} placeholder={pl.villeAutre} hasError={!!errors.villeAutre} />
+              </Field>
+            )}
             <Field label={fl.adresse}>
               <Input type="text" value={form.adresse} onChange={(e) => set('adresse', e.target.value)} placeholder={pl.adresse} hasError={false} />
             </Field>
@@ -280,75 +314,68 @@ export default function ApplyPage() {
 
           {/* 02 — Informations de candidature */}
           <FormSection step="02" title={s.candidature}>
-            <Field label={fl.magasinSouhaite} error={errors.magasinSouhaite}>
-              <SelectField value={form.magasinSouhaite} onChange={(e) => set('magasinSouhaite', e.target.value)} hasError={!!errors.magasinSouhaite}>
-                <option value="">{pl.magasin}</option>
-                {formStores.map((st) => <option key={st} value={st}>{st}</option>)}
-              </SelectField>
-            </Field>
-            <Field label={fl.posteRecherche} error={errors.posteRecherche}>
-              <SelectField value={form.posteRecherche} onChange={(e) => set('posteRecherche', e.target.value)} hasError={!!errors.posteRecherche}>
-                <option value="">{pl.poste}</option>
-                {postes.map((p) => <option key={p} value={p}>{p}</option>)}
-              </SelectField>
-            </Field>
-            {form.posteRecherche === 'Autre' && (
+            {/* Magasins — multi-select chips */}
+            <div data-error={errors.magasinsSouhaites ? true : undefined}>
+              <p className="text-xs font-light text-[#6B6560] mb-1.5 tracking-wide">{fl.magasinSouhaite}</p>
+              <div className="flex flex-wrap gap-2">
+                {formStores.map((st) => (
+                  <Chip key={st} label={st} selected={form.magasinsSouhaites.includes(st)} onClick={() => toggleMagasin(st)} />
+                ))}
+              </div>
+              {errors.magasinsSouhaites && <p className="mt-2 text-xs text-[#C9A96E]">{errors.magasinsSouhaites}</p>}
+            </div>
+
+            {/* Postes — multi-select chips */}
+            <div data-error={errors.postesRecherches ? true : undefined}>
+              <p className="text-xs font-light text-[#6B6560] mb-1.5 tracking-wide">{fl.posteRecherche}</p>
+              <div className="flex flex-wrap gap-2">
+                {postes.map((p) => (
+                  <Chip key={p} label={p} selected={form.postesRecherches.includes(p)} onClick={() => togglePoste(p)} />
+                ))}
+              </div>
+              {errors.postesRecherches && <p className="mt-2 text-xs text-[#C9A96E]">{errors.postesRecherches}</p>}
+            </div>
+            {form.postesRecherches.includes('Autre') && (
               <Field label={fl.posteAutre} error={errors.posteAutre}>
                 <Input type="text" value={form.posteAutre} onChange={(e) => set('posteAutre', e.target.value)} placeholder={pl.posteAutre} hasError={!!errors.posteAutre} />
               </Field>
             )}
-            <Field label={fl.villesSouhaitees}>
+
+            {/* Localisation souhaitée */}
+            <div>
+              <p className="text-xs font-light text-[#6B6560] mb-1.5 tracking-wide">{fl.villesSouhaitees}</p>
               <div className="flex flex-wrap gap-2">
                 {villesSouh.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => toggleVille(v)}
-                    className={`px-4 py-2 text-xs font-medium border transition-all ${
-                      form.villesSouhaitees.includes(v)
-                        ? 'bg-[#C9A96E] text-white border-[#C9A96E]'
-                        : 'bg-white text-[#6B6560] border-[#E5DDD0] hover:border-[#C9A96E] hover:text-[#C9A96E]'
-                    }`}
-                  >
-                    {v}
-                  </button>
+                  <Chip key={v} label={v} selected={form.villesSouhaitees.includes(v)} onClick={() => toggleVille(v)} />
                 ))}
               </div>
-            </Field>
+            </div>
           </FormSection>
 
           {/* 03 — Disponibilité */}
           <FormSection step="03" title={s.disponibilite}>
-            <Field label={fl.disponibilite} error={errors.disponibilite}>
+            <div data-error={errors.disponibilite ? true : undefined}>
+              <p className="text-xs font-light text-[#6B6560] mb-1.5 tracking-wide">{fl.disponibilite}</p>
               <div className="flex flex-wrap gap-2">
                 {disponibilites.map((d) => (
-                  <RadioChip
-                    key={d}
-                    label={d}
-                    checked={form.disponibilite === d}
-                    onChange={() => { set('disponibilite', d); }}
-                  />
+                  <RadioChip key={d} label={d} checked={form.disponibilite === d} onChange={() => set('disponibilite', d)} />
                 ))}
               </div>
               {errors.disponibilite && <p className="mt-2 text-xs text-[#C9A96E]">{errors.disponibilite}</p>}
-            </Field>
+            </div>
           </FormSection>
 
           {/* 04 — Expérience professionnelle */}
           <FormSection step="04" title={s.experience}>
-            <Field label={fl.experienceRetail} error={errors.experienceRetail}>
+            <div data-error={errors.experienceRetail ? true : undefined}>
+              <p className="text-xs font-light text-[#6B6560] mb-1.5 tracking-wide">{fl.experienceRetail}</p>
               <div className="flex flex-wrap gap-2">
                 {c.experienceRetailOptions.map(({ id, label }) => (
-                  <RadioChip
-                    key={id}
-                    label={label}
-                    checked={form.experienceRetail === id}
-                    onChange={() => set('experienceRetail', id)}
-                  />
+                  <RadioChip key={id} label={label} checked={form.experienceRetail === id} onChange={() => set('experienceRetail', id)} />
                 ))}
               </div>
               {errors.experienceRetail && <p className="mt-2 text-xs text-[#C9A96E]">{errors.experienceRetail}</p>}
-            </Field>
+            </div>
 
             {hasRetailExp && (
               <>
@@ -387,25 +414,45 @@ export default function ApplyPage() {
             <Field label={fl.diplomePrincipal}>
               <Input type="text" value={form.diplomePrincipal} onChange={(e) => set('diplomePrincipal', e.target.value)} placeholder={pl.diplomePrincipal} hasError={false} />
             </Field>
-            <Field label={fl.langues} error={errors.langues}>
+
+            {/* Langues avec niveau de maîtrise */}
+            <div data-error={errors.langues ? true : undefined}>
+              <p className="text-xs font-light text-[#6B6560] mb-1.5 tracking-wide">{fl.langues}</p>
               <div className="flex flex-wrap gap-2">
                 {languages.map((l) => (
-                  <button
-                    key={l.id}
-                    type="button"
-                    onClick={() => toggleLangue(l.id)}
-                    className={`px-5 py-2.5 text-xs uppercase tracking-wider font-medium border transition-all ${
-                      form.langues.includes(l.id)
-                        ? 'bg-[#C9A96E] text-white border-[#C9A96E]'
-                        : 'bg-white text-[#6B6560] border-[#E5DDD0] hover:border-[#C9A96E] hover:text-[#C9A96E]'
-                    }`}
-                  >
-                    {l.label}
-                  </button>
+                  <Chip key={l.id} label={l.label} selected={form.langues.includes(l.id)} onClick={() => toggleLangue(l.id)} />
                 ))}
               </div>
+              {form.langues.length > 0 && (
+                <div className="mt-3 border border-[#E5DDD0] divide-y divide-[#E5DDD0]">
+                  {form.langues.map((id) => {
+                    const lang  = languages.find((l) => l.id === id);
+                    const level = form.languesFluency[id] || 0;
+                    return (
+                      <div key={id} className="flex items-center gap-4 px-4 py-3">
+                        <span className="w-20 text-xs text-[#1C1C1C] font-medium shrink-0">{lang?.label}</span>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setLangFluency(id, star === level ? 0 : star)}
+                              className={`text-[1.3rem] leading-none transition-colors ${star <= level ? 'text-[#C9A96E]' : 'text-[#E5DDD0] hover:text-[#C9A96E]/40'}`}
+                            >
+                              ★
+                            </button>
+                          ))}
+                        </div>
+                        <span className="text-xs text-[#6B6560] font-light min-w-[90px]">
+                          {level ? FLUENCY_LABELS[level] : <span className="italic opacity-40">niveau…</span>}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               {errors.langues && <p className="mt-2 text-xs text-[#C9A96E]">{errors.langues}</p>}
-            </Field>
+            </div>
           </FormSection>
 
           {/* 06 — CV */}
@@ -422,11 +469,7 @@ export default function ApplyPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="w-full border border-dashed border-[#E5DDD0] hover:border-[#C9A96E] py-8 text-center transition-colors group"
-                >
+                <button type="button" onClick={() => fileRef.current?.click()} className="w-full border border-dashed border-[#E5DDD0] hover:border-[#C9A96E] py-8 text-center transition-colors group">
                   <Upload size={18} className="mx-auto mb-2 text-[#E5DDD0] group-hover:text-[#C9A96E] transition-colors" />
                   <p className="text-xs uppercase tracking-wider text-[#6B6560] group-hover:text-[#C9A96E] transition-colors font-medium">{pl.cvUpload}</p>
                   <p className="text-xs text-[#6B6560]/50 mt-1 font-light">{pl.cvFormats}</p>
@@ -439,20 +482,8 @@ export default function ApplyPage() {
           {/* 07 — Consentement */}
           <FormSection step="07" title={s.consentement}>
             <div className="space-y-4">
-              <ConsentCheckbox
-                id="consentRgpd"
-                checked={form.consentRgpd}
-                onChange={(v) => set('consentRgpd', v)}
-                text={c.consentRgpdText}
-                error={errors.consentRgpd}
-              />
-              <ConsentCheckbox
-                id="consentCertif"
-                checked={form.consentCertif}
-                onChange={(v) => set('consentCertif', v)}
-                text={c.consentCertifText}
-                error={errors.consentCertif}
-              />
+              <ConsentCheckbox id="consentRgpd"  checked={form.consentRgpd}  onChange={(v) => set('consentRgpd', v)}  text={c.consentRgpdText}  error={errors.consentRgpd} />
+              <ConsentCheckbox id="consentCertif" checked={form.consentCertif} onChange={(v) => set('consentCertif', v)} text={c.consentCertifText} error={errors.consentCertif} />
             </div>
           </FormSection>
 
@@ -481,7 +512,7 @@ export default function ApplyPage() {
   );
 }
 
-/* ── Sub-components ──────────────────────────────── */
+/* ── Sub-components ─────────────────────────────── */
 
 function FormSection({ step, title, children }) {
   return (
@@ -528,6 +559,24 @@ function SelectField({ hasError, children, ...props }) {
   );
 }
 
+/* Generic selectable chip — used for magasins, postes, localisations */
+function Chip({ label, selected, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-4 py-2 text-xs font-medium border transition-all ${
+        selected
+          ? 'bg-[#C9A96E] text-white border-[#C9A96E]'
+          : 'bg-white text-[#6B6560] border-[#E5DDD0] hover:border-[#C9A96E] hover:text-[#C9A96E]'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+/* Radio-style chip — for single-value selections (disponibilité, expérience) */
 function RadioChip({ label, checked, onChange }) {
   return (
     <button
@@ -544,23 +593,27 @@ function RadioChip({ label, checked, onChange }) {
   );
 }
 
+/* Consent checkbox — label wraps everything; onChange on hidden input is the single source of truth */
 function ConsentCheckbox({ id, checked, onChange, text, error }) {
   return (
     <div data-error={error ? true : undefined}>
       <label htmlFor={id} className="flex items-start gap-3 cursor-pointer group">
-        <div
-          className={`w-5 h-5 shrink-0 border flex items-center justify-center mt-0.5 transition-colors ${
-            checked ? 'bg-[#C9A96E] border-[#C9A96E]' : 'bg-white border-[#E5DDD0] group-hover:border-[#C9A96E]'
-          }`}
-          onClick={() => onChange(!checked)}
-        >
+        <div className={`w-5 h-5 shrink-0 border flex items-center justify-center mt-0.5 transition-colors pointer-events-none ${
+          checked ? 'bg-[#C9A96E] border-[#C9A96E]' : 'bg-white border-[#E5DDD0] group-hover:border-[#C9A96E]'
+        }`}>
           {checked && (
             <svg viewBox="0 0 12 10" className="w-3 h-3 text-white fill-none stroke-current stroke-2">
               <polyline points="1,5 4.5,8.5 11,1" />
             </svg>
           )}
         </div>
-        <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only" />
+        <input
+          id={id}
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="sr-only"
+        />
         <span className="text-xs text-[#1C1C1C] font-light leading-relaxed">{text}</span>
       </label>
       {error && <p className="mt-1.5 text-xs text-[#C9A96E] pl-8">{error}</p>}

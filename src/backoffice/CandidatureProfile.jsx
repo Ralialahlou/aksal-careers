@@ -21,6 +21,10 @@ const SCORE_COLORS = {
   red:     { bar: '#ef4444', bg: 'bg-red-50',     text: 'text-red-700'     },
 };
 
+function joinOrFallback(arr, fallback) {
+  return arr?.length ? arr.join(', ') : (fallback || '—');
+}
+
 export default function CandidatureProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -42,6 +46,9 @@ export default function CandidatureProfile() {
   const c = candidature;
   const { label: scoreTag, color } = scoreLabel(c.score ?? 0);
   const sc = SCORE_COLORS[color];
+
+  const magasinsDisplay = joinOrFallback(c.magasinsSouhaites, c.magasinSouhaite || c.magasinPrefere);
+  const postesDisplay   = joinOrFallback(c.postesRecherches,  c.posteRecherche);
 
   return (
     <div className="space-y-8 max-w-3xl">
@@ -71,7 +78,7 @@ export default function CandidatureProfile() {
               {c.score ?? '—'} · {scoreTag}
             </span>
           </div>
-          <p className="text-xs text-[#6B6560] font-light">{c.magasinSouhaite || c.magasinPrefere || '—'}{c.posteRecherche ? ` · ${c.posteRecherche}` : ''}</p>
+          <p className="text-xs text-[#6B6560] font-light">{magasinsDisplay}{postesDisplay !== '—' ? ` · ${postesDisplay}` : ''}</p>
           {c.submittedAt && (
             <p className="text-[0.6rem] text-[#6B6560]/50 mt-1 uppercase tracking-wider">
               Soumis le {new Date(c.submittedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
@@ -96,11 +103,11 @@ export default function CandidatureProfile() {
         </InfoCard>
 
         <InfoCard title="Candidature">
-          <InfoRow icon={<Building2 size={13} />} label="Magasin"      value={c.magasinSouhaite || c.magasinPrefere || '—'} />
-          <InfoRow icon={<Briefcase size={13} />} label="Poste"        value={c.posteRecherche || '—'} />
-          <InfoRow icon={<Clock size={13} />}     label="Disponibilité" value={c.disponibilite || '—'} />
+          <InfoRow icon={<Building2 size={13} />} label="Magasin(s)"      value={magasinsDisplay} />
+          <InfoRow icon={<Briefcase size={13} />} label="Poste(s)"        value={postesDisplay} />
+          <InfoRow icon={<Clock size={13} />}     label="Disponibilité"    value={c.disponibilite || '—'} />
           {c.villesSouhaitees?.length > 0 && (
-            <InfoRow icon={<MapPin size={13} />}  label="Villes souhaitées" value={c.villesSouhaitees.join(', ')} />
+            <InfoRow icon={<MapPin size={13} />}  label="Localisation souhaitée" value={c.villesSouhaitees.join(', ')} />
           )}
         </InfoCard>
 
