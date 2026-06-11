@@ -20,10 +20,9 @@ export default function Header() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 shrink-0">
           <img
-            src={`${import.meta.env.BASE_URL}aksal-logo.png`}
+            src={`${import.meta.env.BASE_URL}aksal-logo-gold.png`}
             alt="Groupe AKSAL"
-            className="h-14 w-auto object-contain"
-            style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.10))' }}
+            className="h-12 w-auto object-contain"
           />
         </Link>
 

@@ -185,7 +185,7 @@ export default function ApplyPage() {
         <div className="h-0.5 w-full bg-gradient-to-r from-[#C9A96E] via-[#EAD8B8] to-[#C9A96E]" />
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
           <img
-            src={`${import.meta.env.BASE_URL}aksal-logo.png`}
+            src={`${import.meta.env.BASE_URL}aksal-logo-gold.png`}
             alt="Groupe AKSAL"
             className="h-20 w-auto object-contain mb-10"
             style={{ filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.08))' }}
