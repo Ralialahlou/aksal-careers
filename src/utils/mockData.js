@@ -3,17 +3,19 @@ import { getCandidatures, saveCandidatures } from './storage.js';
 
 function make(data) {
   const { score, scoreBreakdown } = scoreCandidature({
-    langues:          data.langues,
-    experienceRetail: data.experienceRetail,
-    annéesExperience: data.annéesExperience,
-    disponibilite:    data.disponibilite,
-    niveauEtudes:     data.niveauEtudes,
-    cv:               data.cv,
-    dernierPoste:     data.dernierPoste     || '',
-    dernierEmployeur: data.dernierEmployeur || '',
-    secteurActivite:  data.secteurActivite  || '',
-    diplomePrincipal: data.diplomePrincipal || '',
-    adresse:          data.adresse          || '',
+    langues:           data.langues,
+    magasinsSouhaites: data.magasinsSouhaites || [],
+    magasinSouhaite:   data.magasinSouhaite   || '',
+    experienceRetail:  data.experienceRetail,
+    annéesExperience:  data.annéesExperience,
+    disponibilite:     data.disponibilite,
+    niveauEtudes:      data.niveauEtudes,
+    cv:                data.cv,
+    dernierPoste:      data.dernierPoste     || '',
+    dernierEmployeur:  data.dernierEmployeur || '',
+    secteurActivite:   data.secteurActivite  || '',
+    diplomePrincipal:  data.diplomePrincipal || '',
+    adresse:           data.adresse          || '',
   });
   return { ...data, score, scoreBreakdown };
 }

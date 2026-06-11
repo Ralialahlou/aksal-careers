@@ -1,27 +1,33 @@
 /*
   Scoring system — max 100 points
 
-  Langues          max 35   Français=25 / Anglais=5 / Arabe=3 / Espagnol=2
-  Expérience       max 35   retail=oui → +10 bonus / années: <1=5, 1-2=10, 3-5=18, >5=25
-  Formation        max 15   Bac=3 / Bac+2=7 / Bac+3=10 / Bac+5=15 / Autre=2
+  Langues          max 40   Context-based: Luxe → Fr=25,En=10,Ar=1,Es=4
+                            Autres périmètres  → Fr=30,En=5, Ar=4,Es=1
+  Expérience       max 40   non (1ère exp)=5 / oui=+10 + années: <1=8,1-2=15,3-5=25,>5=30
+  Formation        max  5   Bac=2 / Bac+2=3 / Bac+3=4 / Bac+5=5 / Autre=1
   Disponibilité    max  5   Immédiate=5 / <15j=4 / <1m=2 / >1m=1
   CV joint         max  5
-  Complétude       max  5   +1 per optional field filled (poste, employeur, secteur, diplôme, adresse)
+  Complétude       max  5   +1 per optional field filled
 */
 
+const LANG_SCORES = {
+  luxe:  { francais: 25, anglais: 10, arabe: 1, espagnol: 4 },
+  other: { francais: 30, anglais:  5, arabe: 4, espagnol: 1 },
+};
+
 const EXP_SCORES = {
-  "Moins d'1 an":   5,
-  '1 à 2 ans':     10,
-  '3 à 5 ans':     18,
-  'Plus de 5 ans': 25,
+  "Moins d'1 an":   8,
+  '1 à 2 ans':     15,
+  '3 à 5 ans':     25,
+  'Plus de 5 ans': 30,
 };
 
 const ETUDES_SCORES = {
-  'Baccalauréat':   3,
-  'Bac+2':          7,
-  'Bac+3':         10,
-  'Bac+5 et plus': 15,
-  'Autre':          2,
+  'Baccalauréat':   2,
+  'Bac+2':          3,
+  'Bac+3':          4,
+  'Bac+5 et plus':  5,
+  'Autre':          1,
 };
 
 const DISPO_SCORES = {
@@ -31,48 +37,61 @@ const DISPO_SCORES = {
   "Plus d'1 mois":  1,
 };
 
-const MAX_RAW = 100;
-
 export function scoreCandidature({
-  langues          = [],
-  experienceRetail = '',
-  annéesExperience = '',
-  disponibilite    = '',
-  niveauEtudes     = '',
-  cv               = null,
-  dernierPoste     = '',
-  dernierEmployeur = '',
-  secteurActivite  = '',
-  diplomePrincipal = '',
-  adresse          = '',
+  langues           = [],
+  magasinsSouhaites = [],
+  magasinSouhaite   = '',
+  experienceRetail  = '',
+  annéesExperience  = '',
+  disponibilite     = '',
+  niveauEtudes      = '',
+  cv                = null,
+  dernierPoste      = '',
+  dernierEmployeur  = '',
+  secteurActivite   = '',
+  diplomePrincipal  = '',
+  adresse           = '',
 }) {
   const breakdown = [];
   let raw = 0;
 
-  /* Langues (max 35) — Français fortement valorisé */
-  const addLang = (id, pts, label) => {
+  /* Detect Luxe context */
+  const allMagasins = magasinsSouhaites.length
+    ? magasinsSouhaites
+    : [magasinSouhaite].filter(Boolean);
+  const isLuxe = allMagasins.some((m) => /luxe/i.test(m));
+  const lw = isLuxe ? LANG_SCORES.luxe : LANG_SCORES.other;
+
+  /* Langues (max 40) */
+  const addLang = (id, label) => {
+    const pts = lw[id] ?? 0;
     const earned = langues.includes(id) ? pts : 0;
     raw += earned;
     breakdown.push({ criterion: label, points: earned, max: pts });
   };
-  addLang('francais', 25, 'Français');
-  addLang('anglais',   5, 'Anglais');
-  addLang('arabe',     3, 'Arabe');
-  addLang('espagnol',  2, 'Espagnol');
+  addLang('francais', 'Français');
+  addLang('anglais',  'Anglais');
+  addLang('arabe',    'Arabe');
+  addLang('espagnol', 'Espagnol');
 
-  /* Expérience retail (max 35) — oui fortement valorisé */
-  const retailPts = experienceRetail === 'oui' ? 10 : 0;
+  /* Expérience retail (max 40) */
+  let retailPts = 0;
+  let expPts    = 0;
+  if (experienceRetail === 'oui') {
+    retailPts = 10;
+    expPts    = EXP_SCORES[annéesExperience] ?? 0;
+  } else if (experienceRetail === 'non') {
+    retailPts = 5;
+  }
   raw += retailPts;
   breakdown.push({ criterion: 'Expérience retail', points: retailPts, max: 10 });
-
-  const expPts = experienceRetail === 'oui' ? (EXP_SCORES[annéesExperience] ?? 0) : 0;
   raw += expPts;
-  breakdown.push({ criterion: "Années d'expérience", points: expPts, max: 25 });
+  breakdown.push({ criterion: "Années d'expérience", points: expPts, max: 30 });
 
-  /* Formation (max 15) — niveau d'études fortement valorisé */
+  /* Formation (max 5) */
   const etudesPts = ETUDES_SCORES[niveauEtudes] ?? 0;
   raw += etudesPts;
-  breakdown.push({ criterion: "Niveau d'études", points: etudesPts, max: 15 });
+  breakdown.push({ criterion: "Niveau d'études", points: etudesPts, max: 5 });
 
   /* Disponibilité (max 5) */
   const dispoPts = DISPO_SCORES[disponibilite] ?? 0;
@@ -90,7 +109,7 @@ export function scoreCandidature({
   raw += completude;
   breakdown.push({ criterion: 'Complétude profil', points: completude, max: 5 });
 
-  const score = Math.min(Math.round((raw / MAX_RAW) * 100), 100);
+  const score = Math.min(raw, 100);
   return { score, scoreBreakdown: breakdown };
 }
 

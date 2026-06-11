@@ -164,17 +164,19 @@ export default function ApplyPage() {
         .filter(Boolean);
 
       const { score, scoreBreakdown } = scoreCandidature({
-        langues:          form.langues,
-        experienceRetail: form.experienceRetail,
-        annéesExperience: form.annéesExperience,
-        disponibilite:    form.disponibilite,
-        niveauEtudes:     form.niveauEtudes === 'Autre' ? form.niveauEtudesAutre : form.niveauEtudes,
-        cv:               cvMeta,
-        dernierPoste:     form.dernierPoste,
-        dernierEmployeur: form.dernierEmployeur,
-        secteurActivite:  form.secteurActivite,
-        diplomePrincipal: form.diplomePrincipal,
-        adresse:          form.adresse,
+        langues:           form.langues,
+        magasinsSouhaites: form.magasinsSouhaites,
+        magasinSouhaite:   form.magasinsSouhaites[0] || '',
+        experienceRetail:  form.experienceRetail,
+        annéesExperience:  form.annéesExperience,
+        disponibilite:     form.disponibilite,
+        niveauEtudes:      form.niveauEtudes === 'Autre' ? form.niveauEtudesAutre : form.niveauEtudes,
+        cv:                cvMeta,
+        dernierPoste:      form.dernierPoste,
+        dernierEmployeur:  form.dernierEmployeur,
+        secteurActivite:   form.secteurActivite,
+        diplomePrincipal:  form.diplomePrincipal,
+        adresse:           form.adresse,
       });
 
       addCandidature({
