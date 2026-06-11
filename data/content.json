@@ -43,8 +43,8 @@
 
   "apply": {
     "eyebrow":            "Candidature · Groupe AKSAL",
-    "headlineDefault":    "Déposez votre\ncandidature.",
-    "headlineWithJob":    "Postuler — {poste}",
+    "headlineDefault":    "Rejoignez\nnos équipes.",
+    "headlineSubtitle":   "Déposez votre candidature pour intégrer l'un de nos magasins du Groupe AKSAL.",
     "sections": {
       "identity":     "Informations personnelles",
       "candidature":  "Informations de candidature",
@@ -60,11 +60,12 @@
       "telephone":         "Téléphone *",
       "email":             "Adresse e-mail *",
       "ville":             "Ville de résidence *",
+      "villeAutre":        "Précisez votre ville *",
       "adresse":           "Adresse (facultatif)",
-      "magasinSouhaite":   "Magasin souhaité *",
-      "posteRecherche":    "Poste recherché *",
+      "magasinSouhaite":   "Magasins souhaités *",
+      "posteRecherche":    "Postes recherchés *",
       "posteAutre":        "Précisez le poste",
-      "villesSouhaitees":  "Villes souhaitées",
+      "villesSouhaitees":  "Localisation souhaitée",
       "disponibilite":     "Date de disponibilité *",
       "experienceRetail":  "Expérience en retail / commerce *",
       "annéesExperience":  "Années d'expérience *",
@@ -74,7 +75,7 @@
       "niveauEtudes":      "Niveau d'études *",
       "niveauEtudesAutre": "Précisez votre niveau",
       "diplomePrincipal":  "Diplôme principal",
-      "langues":           "Langues maîtrisées *",
+      "langues":           "Langues *",
       "cv":                "CV / Curriculum Vitae *"
     },
     "placeholders": {
@@ -84,6 +85,7 @@
       "telephone":         "+212 6 00 00 00 00",
       "adresse":           "Rue, quartier…",
       "ville":             "Sélectionnez votre ville",
+      "villeAutre":        "Nom de votre ville",
       "magasin":           "Sélectionnez un magasin",
       "poste":             "Sélectionnez un poste",
       "posteAutre":        "Intitulé du poste recherché",
@@ -102,16 +104,16 @@
       { "id": "oui", "label": "Oui" },
       { "id": "non", "label": "Non — c'est ma première expérience" }
     ],
-    "submitLabel":    "Envoyer ma candidature",
-    "submitting":     "Envoi en cours…",
+    "submitLabel":      "Envoyer ma candidature",
+    "submitting":       "Envoi en cours…",
     "consentRgpdText":  "J'autorise le Groupe AKSAL à collecter et traiter mes données personnelles dans le cadre exclusif de ma candidature, conformément à la loi n°09-08 relative à la protection des données à caractère personnel.",
     "consentCertifText": "Je certifie que les informations communiquées dans ce formulaire sont exactes et sincères.",
     "success": {
-      "eyebrow":     "Candidature reçue",
-      "headline":    "Merci pour votre intérêt.",
-      "message":     "Votre candidature a bien été reçue. Notre équipe RH l'examinera dans les meilleurs délais.",
-      "ctaOffers":   "Voir d'autres offres",
-      "ctaNew":      "Nouvelle candidature"
+      "eyebrow":   "Candidature reçue",
+      "headline":  "Merci pour votre intérêt.",
+      "message":   "Votre candidature a bien été reçue. Notre équipe RH l'examinera dans les meilleurs délais.",
+      "ctaOffers": "Voir d'autres offres",
+      "ctaNew":    "Nouvelle candidature"
     }
   },
 
